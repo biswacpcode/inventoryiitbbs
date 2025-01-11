@@ -57,7 +57,7 @@ export default function AssignRolesPage() {
     if (!isAdmin) {
       alert("You are unauthorized.");
       // Redirect if unauthorized
-      window.location.href = "https://inventory-iitbbs.vercel.app/";
+      window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org";
     } else {
       fetchUsers(); // Fetch data if authorized
     }

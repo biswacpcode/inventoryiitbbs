@@ -17,7 +17,7 @@
     import { Button } from "@/components/ui/button";
     import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectLabel, SelectGroup } from "@/components/ui/select";
     import Loading from "@/components/shared/Loader";
-    import { format } from "date-fns";
+    import { format, addDays } from "date-fns";
     import { JSX, SVGProps } from "react";
 
     // Import server-side functions
@@ -26,6 +26,7 @@
     import { ReadUserByEmail as ServerReadUserByEmail } from "@/lib/actions";
     import { CreateCourtRequest as ServerCreateCourtRequest } from "@/lib/actions";
     import { Models } from "node-appwrite";
+import { signIn } from "next-auth/react";
 
     // Update the User interface if needed
 interface User {
@@ -38,7 +39,7 @@ interface User {
     const router = useRouter();
     const [court, setCourt] = useState<Models.Document | null>(null);
     const [loading, setLoading] = useState(true);
-    const selectedDate = format(new Date(), 'yyyy-MM-dd'); // Initialize with current date
+    const [selectedDate, setSelectedDate]  =useState<string>( format(new Date(), 'yyyy-MM-dd')); // Initialize with current date
     const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
     const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
     const [currentEntry, setcurrentEntry] = useState<string>("");
@@ -110,6 +111,7 @@ interface User {
       }
   
       fetchAvailableSlots();
+
     }, [selectedDate, court]);
   
     const handleCompanionEmailChange = (index: number, value: string) => {
@@ -146,7 +148,7 @@ interface User {
   
       if (!user) {
         alert("User not logged in.");
-        router.push("/api/auth/login?");
+        signIn("google");
         return;
       }
   
@@ -286,6 +288,47 @@ interface User {
           </CardHeader>
           <CardContent>
             <form className="grid gap-4" onSubmit={handleSubmit}>
+            <div className="grid gap-2">
+                <Label htmlFor="dateSelection">Select Date</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={selectedDate === format(new Date(), "yyyy-MM-dd") ? "default" : "outline"}
+                    onClick={async () => {
+                      const today = format(new Date(), "yyyy-MM-dd");
+                      setSelectedDate(today);
+                      const slots = await ServerGenerateAvailableTimeSlots(court.$id, today);
+                      setAvailableTimeSlots(slots);
+                    }}
+                    type="button"
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    variant={selectedDate === format(addDays(new Date(), 1), "yyyy-MM-dd") ? "default" : "outline"}
+                    onClick={async () => {
+                      const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+                      setSelectedDate(tomorrow);
+                      const slots = await ServerGenerateAvailableTimeSlots(court.$id, tomorrow);
+                      setAvailableTimeSlots(slots);
+                    }}
+                    type="button"
+                  >
+                    Tomorrow
+                  </Button>
+                  <Button
+                    variant={selectedDate === format(addDays(new Date(), 2), "yyyy-MM-dd") ? "default" : "outline"}
+                    onClick={async () => {
+                      const tomorrow = format(addDays(new Date(), 2), "yyyy-MM-dd");
+                      setSelectedDate(tomorrow);
+                      const slots = await ServerGenerateAvailableTimeSlots(court.$id, tomorrow);
+                      setAvailableTimeSlots(slots);
+                    }}
+                    type="button"
+                  >
+                    Day After Tomorrow
+                  </Button>
+                </div>
+              </div>
               {/* Time Slot Selection */}
               <div className="grid gap-2">
                 <Label htmlFor="timeSlot">Available Time Slots</Label>

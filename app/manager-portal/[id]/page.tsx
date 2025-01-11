@@ -62,7 +62,7 @@ export default function Component({ params }: { params: { id: string } }) {
         if (!isManager) {
             alert("You are unauthorized.");
             // Redirect if unauthorized
-            window.location.href = "https://inventory-iitbbs.vercel.app/";
+            window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/";
         } else {
             fetchItem(); // Fetch data if authorized
         }

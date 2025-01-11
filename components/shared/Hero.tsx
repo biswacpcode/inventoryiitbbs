@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import { JSX, SVGProps, useEffect } from "react"
 import { useRouter } from "next/navigation";
+import { ClipboardCheckIcon, GithubIcon, LinkedinIcon, RefreshCwIcon } from "lucide-react"
 
 
 
 export default function Component() {
+  
+  const vibrate = (duration: number) => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(duration)
+    }
+  }
   return (
       
 
@@ -114,51 +121,118 @@ export default function Component() {
           </div>
         </section>
         <section id="how-it-works" className="py-16 px-6 md:px-12 lg:px-20">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex items-center justify-center">
-              <img
-                src="https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg"
-                width={400}
-                height={400}
-                alt="How Vault IIT BBS Works"
-                className="rounded-lg"
-                style={{ aspectRatio: "400/400", objectFit: "cover" }}
-              />
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">How Vault IIT BBS Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="bg-background rounded-lg p-6 text-center">
+                <CalendarIcon className="w-12 h-12 mb-4 mx-auto text-primary" />
+                <h3 className="text-xl font-bold mb-2">Book & Reserve</h3>
+                <p className="text-muted-foreground">
+                  Easily book and reserve items for your events or activities.
+                </p>
+              </div>
+              <div className="bg-background rounded-lg p-6 text-center">
+                <ClipboardCheckIcon className="w-12 h-12 mb-4 mx-auto text-primary" />
+                <h3 className="text-xl font-bold mb-2">Approval System</h3>
+                <p className="text-muted-foreground">
+                  Robust approval process ensures proper allocation of resources.
+                </p>
+              </div>
+              <div className="bg-background rounded-lg p-6 text-center">
+                <TruckIcon className="w-12 h-12 mb-4 mx-auto text-primary" />
+                <h3 className="text-xl font-bold mb-2">Item Checkout</h3>
+                <p className="text-muted-foreground">
+                  Streamlined checkout process for quick and easy item retrieval.
+                </p>
+              </div>
+              <div className="bg-background rounded-lg p-6 text-center">
+                <RefreshCwIcon className="w-12 h-12 mb-4 mx-auto text-primary" />
+                <h3 className="text-xl font-bold mb-2">Seamless Returns</h3>
+                <p className="text-muted-foreground">
+                  Effortless return process to ensure proper item tracking and maintenance.
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-4">How Vault IIT BBS Works</h2>
-              <p className="text-muted-foreground mb-4">
-                Vault IIT BBS is designed to be intuitive and easy to use, making inventory management a breeze for the
-                Students&apos; Gymkhana.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-background rounded-lg p-4">
-                  <PackageIcon className="w-6 h-6 mb-2 text-primary" />
-                  <h3 className="text-lg font-bold mb-1">Add Items</h3>
-                  <p className="text-muted-foreground">
-                    Easily add new items to your inventory, including details like name, description, and quantity.
-                  </p>
+          </div>
+        </section>
+
+        <section id="developers" className="py-16 px-6 md:px-12 lg:px-20 bg-muted">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">Meet Our Developers</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-background rounded-lg p-6 text-center">
+                <img
+                  src="/placeholder.svg?height=100&width=100"
+                  alt="Biswajit Rout"
+                  className="w-24 h-24 rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-bold mb-2">Biswajit Rout</h3>
+                <p className="text-primary font-medium mb-4">FullStack Developer</p>
+                <div className="flex justify-center space-x-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <GithubIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <LinkedinIcon className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="bg-background rounded-lg p-4">
-                  <UsersIcon className="w-6 h-6 mb-2 text-primary" />
-                  <h3 className="text-lg font-bold mb-1">Manage Users</h3>
-                  <p className="text-muted-foreground">
-                    Assign user roles and permissions to control access to your inventory data.
-                  </p>
+              </div>
+              <div className="bg-background rounded-lg p-6 text-center">
+                <img
+                  src="/placeholder.svg?height=100&width=100"
+                  alt="Ashish Kumar Singh"
+                  className="w-24 h-24 rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-bold mb-2">Ashish Kumar Singh</h3>
+                <p className="text-primary font-medium mb-4">Full Stack Developer</p>
+                <div className="flex justify-center space-x-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <GithubIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <LinkedinIcon className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="bg-background rounded-lg p-4">
-                  <FileTextIcon className="w-6 h-6 mb-2 text-primary" />
-                  <h3 className="text-lg font-bold mb-1">Generate Reports</h3>
-                  <p className="text-muted-foreground">
-                    Gain valuable insights by generating detailed reports on inventory usage and trends.
-                  </p>
-                </div>
-                <div className="bg-background rounded-lg p-4">
-                  <TruckIcon className="w-6 h-6 mb-2 text-primary" />
-                  <h3 className="text-lg font-bold mb-1">Track Checkouts</h3>
-                  <p className="text-muted-foreground">
-                    Monitor item checkouts and returns, ensuring efficient resource utilization.
-                  </p>
+              </div>
+              <div className="bg-background rounded-lg p-6 text-center">
+                <img
+                  src="/placeholder.svg?height=100&width=100"
+                  alt="Aditya Raj"
+                  className="w-24 h-24 rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-bold mb-2">Aditya Raj</h3>
+                <p className="text-primary font-medium mb-4">Frontend Developer</p>
+                <div className="flex justify-center space-x-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <GithubIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => vibrate(50)}
+                  >
+                    <LinkedinIcon className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>

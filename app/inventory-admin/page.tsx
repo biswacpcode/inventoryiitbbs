@@ -44,7 +44,7 @@ interface InventoryItem {
       if (!isAdmin) {
         alert("You are unauthorized.");
          // Redirect if unauthorized
-         window.location.href = "https://inventory-iitbbs.vercel.app/";
+         window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/";
       } else {
         fetchItems(); // Fetch data if authorized
       }

@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/shared/Loader';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export default function Page() {
   const [items, setItems] = useState<any[]>([]);
@@ -34,12 +35,12 @@ export default function Page() {
       const user = data.user;
       setUser(user);
       if (!user) {
-        router.push('/api/auth/login?');
+        signIn('google');
       } else {
         const isSociety = await checkRole('Society');
         if (!isSociety) {
           alert('You are unauthorized.');
-          window.location.href = 'https://inventory-iitbbs.vercel.app/';
+          window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/';
         } else {
           fetchItems(); // Fetch data if authorized
           handleURLParams(); // Handle query parameters
@@ -79,15 +80,15 @@ export default function Page() {
 
     const isValidSociety = await validSociety(requestId);
     if (!isValidSociety) {
-      window.location.href = 'https://inventory-iitbbs.vercel.app/items-requests';
+      window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
     } else {
       if (approveId) {
         await approveItem(approveId, 'approved');
-        window.location.href = 'https://inventory-iitbbs.vercel.app/items-requests';
+        window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
       }
       if (rejectId) {
         await approveItem(rejectId, 'rejected');
-        window.location.href = 'https://inventory-iitbbs.vercel.app/items-requests';
+        window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
       }
     }
   }

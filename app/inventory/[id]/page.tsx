@@ -136,8 +136,8 @@ export default function Component({ params }: { params: { id: string } }) {
           itemName: item.itemName,
           bookedQuantity: bookedQuantity.toString(),
           purpose: purpose,
-          approveLink: `https://inventory-iitbbs.vercel.app/items-requests?approveId=${requestId}`,
-          rejectLink: `https://inventory-iitbbs.vercel.app/items-requests?rejectId=${requestId}`
+          approveLink: `https://inventory-iitbbs.webnd-iitbbs.org/items-requests?approveId=${requestId}`,
+          rejectLink: `https://inventory-iitbbs.webnd-iitbbs.org/items-requests?rejectId=${requestId}`
         };
  // Call the API route to send the email
         await fetch('/api/send-booking-email', {

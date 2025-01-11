@@ -49,24 +49,44 @@ export default function CourtRequestPage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Court Booking Request</h1>
-      
-      {/* Display Court Request Details */}
-      <div className="mb-4">
-        <p><strong>Court Name:</strong> {courtRequest.courtName}</p>
-        <p><strong>Requested by:</strong> {requester.firstName} {requester.lastName}</p>
-        <p><strong>Time Slot:</strong> {courtRequest.start} - {courtRequest.end}</p>
-        <p><strong>Companions:</strong> {companions.length > 0 ? 
-          companions.map(comp => `${comp.firstName} ${comp.lastName}`).join(", ") : 
-          "No companions"}</p>
-      </div>
+    <div className="container mx-auto max-w-xl p-6 bg-white shadow-lg rounded-lg">
+  {/* Heading */}
+  <h1 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
+    Court Booking Request
+  </h1>
 
-      {/* Generate and Display QR Code */}
-      <div className="mt-4">
-        <QRCode value={params.id} size={200} />
-        <p className="mt-2 text-sm text-gray-500">Scan this code for court check-in/check-out.</p>
-      </div>
+  {/* Court Request Details */}
+  <div className="bg-gray-100 p-4 rounded-lg mb-6 shadow-md">
+    <h2 className="text-xl font-semibold text-gray-700 mb-4">Booking Details</h2>
+    <div className="text-gray-600 space-y-2">
+      <p>
+        <span className="font-medium text-gray-800">Court Name:</span> {courtRequest.courtName}
+      </p>
+      <p>
+        <span className="font-medium text-gray-800">Requested by:</span> {requester.firstName} {requester.lastName}
+      </p>
+      <p>
+        <span className="font-medium text-gray-800">Time Slot:</span> {courtRequest.start} - {courtRequest.end}
+      </p>
+      <p>
+        <span className="font-medium text-gray-800">Companions:</span>{" "}
+        {companions.length > 0
+          ? companions.map((comp) => `${comp.firstName} ${comp.lastName}`).join(", ")
+          : "No companions"}
+      </p>
     </div>
+  </div>
+
+  {/* QR Code Section */}
+  <div className="flex flex-col items-center">
+    <div className="p-4 bg-gray-50 rounded-lg shadow-inner">
+      <QRCode value={params.id} size={200} />
+    </div>
+    <p className="mt-4 text-sm text-gray-500 text-center">
+      Scan this code for court check-in/check-out.
+    </p>
+  </div>
+</div>
+
   );
 }
