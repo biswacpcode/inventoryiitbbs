@@ -21,7 +21,7 @@ import  Input  from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { JSX, SVGProps, useState, useEffect, FormEvent } from "react";
-import { ReadInventoryItemById, CreateBookingRequest, ReadUserById, CreateInventoryItem, fetchUsersByRole, UpdateImage, ModifyInventoryItem, checkRole } from "@/lib/actions";
+import { ReadInventoryItemById, CreateBookingRequest, ReadUserById, CreateInventoryItem, fetchUsersByRole, UpdateImage, ModifyInventoryItem, checkRole, ReadCourtById } from "@/lib/actions";
 import Loading from "@/components/shared/Loader";
 import { Models } from "node-appwrite";
 import Modal from "@/components/shared/Modal";
@@ -29,8 +29,6 @@ import Modal from "@/components/shared/Modal";
 export default function Component({ params }: { params: { id: string } }) {
   const [item, setItem] = useState<any>(null);
   const [purpose, setPurpose] = useState("");
-  const [societies, setSocieties] = useState<Models.Document[]>([]);
-  const [councils, setCouncils] = useState<Models.Document[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
 
@@ -48,12 +46,9 @@ export default function Component({ params }: { params: { id: string } }) {
         }
       }
     async function fetchItem() {
-      const fetchedItem = await ReadInventoryItemById(params.id);
+      const fetchedItem = await ReadCourtById(params.id);
       setItem(fetchedItem);
-        const fetchedSocieties = await fetchUsersByRole("Society");
-        const fetchedCouncils = await fetchUsersByRole("Council");
-        setCouncils(fetchedCouncils);
-        setSocieties(fetchedSocieties);
+      console.log(fetchItem)
 
      
     }
@@ -80,7 +75,7 @@ export default function Component({ params }: { params: { id: string } }) {
       const council = (changedCouncil)?changedCouncil: item.council;
       
       const status = (changedStatus)?changedStatus : item.defaultStatus;
-      const itemName = formdata.get("name") !== '' ? formdata.get("name") : item.itemName;
+      const itemName = formdata.get("court-name") !== '' ? formdata.get("court-name") : item.courtName;
       const description = formdata.get("description") !== '' ? formdata.get("description") : item.description;
       const totalQuantity = formdata.get("total-quantity") !== '' ? parseInt(formdata.get("total-quantity") as string, 10) : item.totalQuantity;
       const availableQuantity = formdata.get("available-quantity") !== '' ? parseInt(formdata.get("available-quantity") as string, 10) : item.availableQuantity;
@@ -161,10 +156,10 @@ const modalClose= () => {
         
     <CardHeader>
       <CardTitle className="text-3xl font-bold">
-        Modify {item.itemName}
+        Modify {item.courtName}
         <img
-          src={item.itemImage}
-          alt="Issue Item"
+          src={item.courtImage}
+          alt="Court Image"
           width={300}
           height={200}
           className="rounded-lg object-cover w-60 aspect-[3/2]"
@@ -175,155 +170,113 @@ const modalClose= () => {
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <form onSubmit={handleSubmit} className="grid gap-6" encType="multipart/form-data">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name" className="text-sm font-medium">
-              Name
-            </Label>
-            <Input id="name" name="name" placeholder={item.itemName} />
+    <form onSubmit={handleSubmit} className="grid gap-6" encType="multipart/form-data">
+          {/* Name and Image */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="court-name" className="text-sm font-medium">
+                Name
+              </Label>
+              <Input
+                id="court-name"
+                name="court-name"
+                placeholder={item.courtName}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="court-image" className="text-sm font-medium">
+                Image
+              </Label>
+              <Input
+                id="court-image"
+                type="file"
+                name="courtImage"
+                accept="image/*"
+              />
+            </div>
           </div>
+
+          {/* Location */}
           <div className="grid gap-2">
-            <Label htmlFor="image" className="text-sm font-medium">
-              Image 
-              <span className="text-muted-foreground px-4 text-xs">{item.itemImage.includes("appwrite")?"(Default Image)":"(No Image)"}</span>
-            </Label>
-            <Input id="image" type="file" name = "itemImage" accept="image/*"/>
-            
-          </div>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="description" className="text-sm font-medium" >
-            Stock Register Entry
-          </Label>
-          <Input
-            id="description"
-            name="description"
-            placeholder={item.description}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="total-quantity" className="text-sm font-medium">
-              Total Quantity
-            </Label>
-            <Input
-              id="total-quantity"
-              name="total-quantity"
-              type="number"
-              placeholder={item.totalQuantity}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="available-quantity"
-              className="text-sm font-medium"
-            >
-              Available Quantity
+            <Label htmlFor="court-location" className="text-sm font-medium">
+              Location
             </Label>
             <Input
-              id="available-quantity"
-              name="available-quantity"
-              type="number"
-              placeholder={item.availableQuantity} 
+              id="court-location"
+              name="court-location"
+              placeholder={item.location}
+              required
             />
           </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* Total Courts and Max Time */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="total-courts" className="text-sm font-medium">
+                Total Number of Courts
+              </Label>
+              <Input
+                id="total-courts"
+                name="total-courts"
+                type="number"
+                placeholder={item.totalCourts}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="max-time" className="text-sm font-medium">
+                Maximum Time for User (in hours)
+              </Label>
+              <Input
+                id="max-time"
+                name="max-time"
+                type="number"
+                placeholder={item.maxTime}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Minimum Users */}
           <div className="grid gap-2">
-            <Label htmlFor="allowed-quantity" className="text-sm font-medium">
-              Maximum Allowed Quantity
+            <Label htmlFor="min-users" className="text-sm font-medium">
+              Minimum Number of Users to Get Access
             </Label>
             <Input
-              id="allowed-quantity"
-              name="allowed-quantity"
+              id="min-users"
+              name="min-users"
               type="number"
-              placeholder={item.maxQuantity} 
+              placeholder={item.minUsers}
+              required
             />
           </div>
+
+          {/* Time Slots */}
           <div className="grid gap-2">
-            <Label
-              htmlFor="allowed-time"
-              className="text-sm font-medium"
-            >
-              Maximum Allowed Time(in days)
+            <Label htmlFor="time-slots" className="text-sm font-medium">
+              Time Slots for Every Day
             </Label>
-            <Input
-              id="allowed-time"
-              name="allowed-time"
-              type="number"
-              placeholder={item.maxTime} 
+            <Textarea
+              id="time-slots"
+              name="time-slots"
+              placeholder={item.timeSlots}
+              required
             />
+            <small className="text-muted-foreground">
+              Example: Monday:- 05:00-10:00, 17:00-21:00; Tuesday:- 05:00-10:00, 17:00-21:00
+            </small>
           </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="society" className="text-sm font-medium">
-              Society
-            </Label>
-            <Select name="society">
-              <SelectTrigger>
-                <SelectValue placeholder={"Change Society"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Societies</SelectLabel>
-                  {
-                    societies.map((society) => (
-                      <SelectItem key={society.$id} value={society.id}>{society.firstName} {society.lastName}</SelectItem>
-                    ))
-                  }
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="council" className="text-sm font-medium">
-              Council
-            </Label>
-            <Select name="council">
-              <SelectTrigger>
-                <SelectValue placeholder="Change council" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Councils</SelectLabel>
-                  {
-                    councils.map((council) => (
-                      <SelectItem key={council.$id} value={council.id}>{council.firstName} {council.lastName}</SelectItem>
-                    ))
-                  }
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="description" className="text-sm font-medium">
-            Default Request Status
-          </Label>
-          <Select name="defaultStatus">
-              <SelectTrigger>
-                <SelectValue placeholder={item.defaultStatus} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Statuses</SelectLabel>
-                  <SelectItem value = "pending">Pending</SelectItem>
-                  <SelectItem value = "approved">Approved</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-        </div>
-        {
+
+          {/* Submit Button */}
+          {
             isLoading ? (
                 <Loading/>
             ):(
-                <Button>Save Item</Button>
+                <Button>Save Court</Button>
             )
         }
-        
-      </form>
+        </form>
         
 
     </CardContent>

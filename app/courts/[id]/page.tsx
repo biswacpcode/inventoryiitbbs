@@ -50,6 +50,9 @@ interface User {
     const [userId, setUserId] = useState<string | null>(null);
      // Initialize as null
      const [permission, setPermission] = useState<boolean>(true);
+     const [maxComp, setMaxComp] = useState<number>(0);
+     const [isUpdating, setIsUpdating] = useState(false);
+     
   
     useEffect(() => {
       async function fetchCourt() {
@@ -57,6 +60,9 @@ interface User {
           const fetchedCourt = await ServerReadCourtById(params.id);
           if (fetchedCourt) {
             setCourt(fetchedCourt);
+            const maxCom = fetchedCourt.minUsers;
+            setMaxComp(maxCom);
+      
           } else {
             alert("Court not found.");
             router.push("/courts");
@@ -79,16 +85,19 @@ interface User {
             setUser(data.user);
             setUserId(data.userId);
           } else {
-            router.push("/");
+            // router.push("/");
           }
         } catch (error) {
           console.error("Failed to fetch user info:", error);
-          router.push("/"); // Redirect on error as well
+          // router.push("/"); // Redirect on error as well
         }
       }
   
       fetchCourt();
       fetchUser();
+
+      
+
     }, [params.id, router]);
 
     
@@ -100,6 +109,20 @@ interface User {
         if (selectedDate && court) {
           try {
             const slots = await ServerGenerateAvailableTimeSlots(court.$id, selectedDate);
+
+            const now = new Date();
+            const currentISTTime = new Date(
+              now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+            ).toTimeString().slice(0, 8);
+
+            const filteredSlots = slots.filter(slot => {
+              const [, endTime] = slot.split(" - "); // Extract end time
+              return endTime > currentISTTime; // Compare end time with current time
+            });
+            
+            if (format(now, 'yyyy-MM-dd')===selectedDate)
+            setAvailableTimeSlots(filteredSlots);
+            else
             setAvailableTimeSlots(slots);
           } catch (error) {
             console.error("Failed to fetch available time slots:", error);
@@ -115,28 +138,12 @@ interface User {
     }, [selectedDate, court]);
   
     const handleCompanionEmailChange = (index: number, value: string) => {
-        if (value.endsWith("@iitbbs.ac.in")){
-            setAddButton(false);    
             const updatedEmails = [...companionEmails];
             updatedEmails[index] = value;
             setCompanionEmails(updatedEmails);
-            
-        }else{
-            alert("Invalid Email Entry\n Try Again");
-        }
-      
     };
   
-    const addCompanionEmailField = () => {
-      if (court && companionEmails.length < court.minUsers) {
-        setCompanionEmails([...companionEmails, ""]);
-      }
-    };
-  
-    const removeCompanionEmailField = (index: number) => {
-      const updatedEmails = companionEmails.filter((_, i) => i !== index);
-      setCompanionEmails(updatedEmails);
-    };
+
   
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -256,6 +263,17 @@ interface User {
     if (loading || !court) return <Loading />;
 
     console.log(permission);
+
+    const handleCompanionEmailsSubmit = () => {
+      if (isUpdating) {
+        // Clear and update array with new emails
+        setCompanionEmails([...companionEmails]);
+      } else {
+        // First submission: Push all emails
+        setCompanionEmails([...companionEmails]);
+      }
+      setIsUpdating(true); // Change button state to "Update Changes"
+    };
   
     return (
       <div className="flex flex-col md:flex-row gap-8 p-4 md:p-8 lg:p-12">
@@ -362,38 +380,39 @@ interface User {
               </div>
   
               {/* Companion Emails */}
-              <div className="grid gap-2">
-                <Label>Companion Emails</Label>
-                {companionEmails.map((email, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      type="email"
-                      placeholder={`Companion ${index + 1} Email`}
-                      onChange={(e) => setcurrentEntry(e.target.value)}
-                      required
-                    />
-                    {addButton?(
-                        <Button type="button" variant="default" onClick={() => handleCompanionEmailChange(index, currentEntry)}>
-                      Add
-                    </Button>
-                    ):(
-                    <Button type="button" variant="destructive" onClick={() => removeCompanionEmailField(index)}>
-                      Remove
-                    </Button>
-                    )}
-                    
-                    
-                  </div>
-                ))}
-                {companionEmails.length < (court.minUsers || 1) && (
-                  <Button type="button" onClick={addCompanionEmailField}>
-                    Add Companion
-                  </Button>
-                )}
-                <small className="text-muted-foreground">
-                  Enter the email addresses of your {court.minUsers} companions.
-                </small>
-              </div>
+                <div className="grid gap-2">
+                  <Label>Companion Emails</Label>
+                  {maxComp === 0 ? (
+                    <p>No companions needed.</p>
+                  ) : (
+                    <div>
+                      {Array.from({ length: maxComp }).map((_, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            type="email"
+                            placeholder={`Companion ${index + 1} Email`}
+                            value={companionEmails[index] || ""}
+                            onChange={(e) =>
+                              handleCompanionEmailChange(index, e.target.value)
+                            }
+                            required
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        onClick={handleCompanionEmailsSubmit}
+                        disabled={companionEmails.length < maxComp || companionEmails.some((email) => email.trim() === "")}
+                      >
+                        {isUpdating ? "Update Changes" : "Add Companions"}
+                      </Button>
+                    </div>
+                  )}
+                  <small className="text-muted-foreground">
+                    Enter the email addresses of your {maxComp} companions.
+                  </small>
+                </div>
+
   
               {/* Submit Button */}
               {isSubmitting ? (

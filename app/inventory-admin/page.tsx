@@ -10,7 +10,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ReadItemsInSociety, DeleteInventoryItem, UpdateInventoryItem, checkRole, ReadInventoryItems } from "@/lib/actions"; 
+import { ReadItemsInSociety, DeleteInventoryItem, UpdateInventoryItem, checkRole, ReadInventoryItems, ReadInventoryCourts } from "@/lib/actions"; 
 import Link from "next/link";
 import Loading from "@/components/shared/Loader";
 import { Check, SearchIcon, X } from "lucide-react";
@@ -32,29 +32,80 @@ interface InventoryItem {
     availableQuantity?: number;
     damagedQuantity: number;
   }
+  interface Court {
+    $id: string;
+    courtName: string;
+    courtImage: string;
+    location: string;
+  }
   
   export default function InventoryAdmin() {
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState<string | null>(null); // Loading state for deletion
     const [editedItems, setEditedItems] = useState<{ [key: string]: EditedItem }>({});
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const [activeTab, setActiveTab] = useState<string>("items");
+    const [courts, setCourts] = useState<Court[]>([]);
 
     async function checkAuthorization() {
-      const isAdmin = await checkRole("Admin");
+      const isAdmin = true //await checkRole("Admin");
       if (!isAdmin) {
         alert("You are unauthorized.");
          // Redirect if unauthorized
          window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/";
       } else {
-        fetchItems(); // Fetch data if authorized
+        if (activeTab === "items") {
+          fetchItems();
+        } else if (activeTab === "courts") {
+          fetchCourts();
+        }
       }
     }
-  
-    // Fetch the inventory items when the component is mounted
     async function fetchItems() {
       const fetchedItems = await ReadInventoryItems();
       setItems(fetchedItems ?? []);
     }
+
+    async function fetchCourts() {
+          try {
+            const inventoryCourts = await ReadInventoryCourts();
+            setCourts(inventoryCourts || []);
+          } catch (error) {
+            console.error("Failed to fetch courts:", error);
+          } finally {
+            setLoading("");
+          }
+        }
+
+  
+
+
+        useEffect(()=>{
+  // Fetch the inventory items when the component is mounted
+    async function fetchItems() {
+      const fetchedItems = await ReadInventoryItems();
+      setItems(fetchedItems ?? []);
+    }
+
+    async function fetchCourts() {
+          try {
+            const inventoryCourts = await ReadInventoryCourts();
+            setCourts(inventoryCourts || []);
+          } catch (error) {
+            console.error("Failed to fetch courts:", error);
+          } finally {
+            setLoading("");
+          }
+        }
+
+        if (activeTab === "items") {
+          fetchItems();
+        } else if (activeTab === "courts") {
+          fetchCourts();
+        }
+
+
+        }, [activeTab])
   
     // Use Effect hook to fetch inventory items on mount
     useEffect(() => {
@@ -129,6 +180,10 @@ interface InventoryItem {
       item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const filteredCourts = courts.filter((court) =>
+      court.courtName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     // Function to download data as CSV
     const handleDownloadCSV = () => {
       const headers = ["Item Name", "Total Quantity", "Available Quantity", "Issued Quantity", "Damaged"];
@@ -164,7 +219,7 @@ interface InventoryItem {
         <div className="mb-6">
         <div className="relative">
           <Input
-            placeholder="Search items..."
+            placeholder={`Search ${activeTab}`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-background shadow-none appearance-none pl-8"
@@ -172,102 +227,186 @@ interface InventoryItem {
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
+      {/* ------------------------ TABS -------------------- */}
+      <div className="mb-6 flex space-x-4">
+        <Button
+          variant={activeTab === "items" ? "default" : "outline"}
+          onClick={() => setActiveTab("items")}
+        >
+          Items
+        </Button>
+        <Button
+          variant={activeTab === "courts" ? "default" : "outline"}
+          onClick={() => setActiveTab("courts")}
+        >
+          Courts
+        </Button>
+      </div>
+
+      {/* CARD GRID */}
+      {activeTab==="items" && (
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Total Quantity</TableHead>
-                <TableHead>Available Quantity</TableHead>
-                <TableHead>Total Issued</TableHead>
-                <TableHead>Damaged</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-            {filteredItems.length > 0 ? (
-              [...filteredItems].reverse().map((item) => (
-                <TableRow
-                  key={item.$id}
-                  className="border-b border-gray-200 hover:bg-muted"
-                >
-                  <TableCell>
-                    <Link href={`/inventory-admin/${item.$id}`}>
-                    {item.itemName}
-                    </Link>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Total Quantity</TableHead>
+              <TableHead>Available Quantity</TableHead>
+              <TableHead>Total Issued</TableHead>
+              <TableHead>Damaged</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+          {filteredItems.length > 0 ? (
+            [...filteredItems].reverse().map((item) => (
+              <TableRow
+                key={item.$id}
+                className="border-b border-gray-200 hover:bg-muted"
+              >
+                <TableCell>
+                  <Link href={`/inventory-admin/${item.$id}`}>
+                  {item.itemName}
+                  </Link>
+                  
                     
-                      
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Button onClick={() => handleQuantityChange(item.$id, 'totalQuantity', -1)}>-</Button>
+                    <span className="mx-2">{editedItems[item.$id]?.totalQuantity ?? item.totalQuantity}</span>
+                    <Button onClick={() => handleQuantityChange(item.$id, 'totalQuantity', 1)}>+</Button>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Button onClick={() => handleQuantityChange(item.$id, 'availableQuantity', -1)}>-</Button>
+                    <span className="mx-2">{editedItems[item.$id]?.availableQuantity ?? item.availableQuantity}</span>
+                    <Button onClick={() => handleQuantityChange(item.$id, 'availableQuantity', 1)}>+</Button>
+                  </div>
+                </TableCell>
+                <TableCell><div className="flex items-center">
+                    <Button onClick={() => handleQuantityChange(item.$id, 'damagedQuantity', -1)}>-</Button>
+                    <span className="mx-2">{editedItems[item.$id]?.damagedQuantity ?? item.damagedQuantity}</span>
+                    <Button onClick={() => handleQuantityChange(item.$id, 'damagedQuantity', 1)}>+</Button>
+                  </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Button onClick={() => handleQuantityChange(item.$id, 'totalQuantity', -1)}>-</Button>
-                      <span className="mx-2">{editedItems[item.$id]?.totalQuantity ?? item.totalQuantity}</span>
-                      <Button onClick={() => handleQuantityChange(item.$id, 'totalQuantity', 1)}>+</Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Button onClick={() => handleQuantityChange(item.$id, 'availableQuantity', -1)}>-</Button>
-                      <span className="mx-2">{editedItems[item.$id]?.availableQuantity ?? item.availableQuantity}</span>
-                      <Button onClick={() => handleQuantityChange(item.$id, 'availableQuantity', 1)}>+</Button>
-                    </div>
-                  </TableCell>
-                  <TableCell><div className="flex items-center">
-                      <Button onClick={() => handleQuantityChange(item.$id, 'damagedQuantity', -1)}>-</Button>
-                      <span className="mx-2">{editedItems[item.$id]?.damagedQuantity ?? item.damagedQuantity}</span>
-                      <Button onClick={() => handleQuantityChange(item.$id, 'damagedQuantity', 1)}>+</Button>
-                    </div>
-                    </TableCell>
-                  <TableCell>{item.issuedQuantity}</TableCell>
-                 
-                  <TableCell className="flex items-center gap-2 w-40 left-5">
-                    {loading === item.$id ? (
-                      <Loading /> // Placeholder for your loading component
-                    ) : (
-                      <>
-                        {editedItems[item.$id] ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              title="Save"
-                              size="sm"
-                              onClick={()=> handleChange(item.$id)}
-                            >
-                              <Check/>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => handleCancelChanges(item.$id)}
-                              title="Cancel"
-                              size="sm"
-                            >
-                              <X/>
-                            </Button>
-                          </>
-                        ) : (
+                <TableCell>{item.issuedQuantity}</TableCell>
+               
+                <TableCell className="flex items-center gap-2 w-40 left-5">
+                  {loading === item.$id ? (
+                    <Loading /> // Placeholder for your loading component
+                  ) : (
+                    <>
+                      {editedItems[item.$id] ? (
+                        <>
                           <Button
                             variant="outline"
-                            size="icon"
-                            onClick={() => handleDelete(item.$id)}
+                            title="Save"
+                            size="sm"
+                            onClick={()=> handleChange(item.$id)}
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            <Check/>
                           </Button>
-                        )}
-                      </>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    No matching items found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleCancelChanges(item.$id)}
+                            title="Cancel"
+                            size="sm"
+                          >
+                            <X/>
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleDelete(item.$id)}
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No matching items found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      )}
+
+{activeTab==="courts" && (
+        <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Location</TableHead>
+              
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+          {filteredCourts.length > 0 ? (
+            [...filteredCourts].reverse().map((court) => (
+              <TableRow
+                key={court.$id}
+                className="border-b border-gray-200 hover:bg-muted"
+              >
+                <TableCell>
+                  <Link href={`/court-modify/${court.$id}`}>
+                  {court.courtName}
+                  </Link>
+                  
+                    
+                </TableCell>
+                <TableCell>
+                 {court.location}
+                  
+                    
+                </TableCell>
+                
+               
+                <TableCell className="flex items-center gap-2 w-40 left-5">
+                  {loading === court.$id ? (
+                    <Loading /> // Placeholder for your loading component
+                  ) : (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleDelete(court.$id)}
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    
+             
+                </TableCell>
+              </TableRow>
+            ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No matching items found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      )}
+
+
+
+        
       </div>
     );
   }

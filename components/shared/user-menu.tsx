@@ -27,18 +27,7 @@ export default function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
-          <User className="h-4 w-4" />
-          <span>Profile</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          <span>Requests</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2" onClick={()=>getUser()}>
-          <FileText className="h-4 w-4" />
-          <span>Check User</span>
-        </DropdownMenuItem>
+        
         <DropdownMenuItem 
           className="cursor-pointer flex items-center gap-2 text-red-600"
           onClick={() => signOut()}

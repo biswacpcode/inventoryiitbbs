@@ -409,9 +409,9 @@ export async function ReadInventoryItems() {
   // VERIFYING USER
   const user = await getUser();
 
-  if (!user) {
-    return null; // Or handle the unauthorized case as needed
-  }
+  // if (!user) {
+  //   return null; // Or handle the unauthorized case as needed
+  // }
 
   try {
     // Fetch inventory items from Appwrite
@@ -449,9 +449,9 @@ export async function ReadInventoryCourts() {
   // VERIFYING USER
   const user = await getUser();
 
-  if (!user) {
-    return null; // Or handle the unauthorized case as needed
-  }
+  // if (!user) {
+  //   return null; // Or handle the unauthorized case as needed
+  // }
 
   try {
     // Fetch inventory items from Appwrite
@@ -1434,12 +1434,8 @@ export async function GenerateAvailableTimeSlots(
 
   // Get day of the week
   const dayOfWeek = new Date(date).toLocaleDateString("en-US", { weekday: "long" });
-  console.log(date);
-  console.log(dayOfWeek);
-  console.log(court.timeSlots);
 
   const courtTimeSlots: string[] = JSON.parse(court.timeSlots)[dayOfWeek];
-  console.log(courtTimeSlots);
   if (!courtTimeSlots || courtTimeSlots.length === 0) {
     return [];
   }
@@ -1455,30 +1451,33 @@ export async function GenerateAvailableTimeSlots(
     let current = startDate;
     const maxDuration = court.maxTime * 60; // in minutes
 
-    while (addMinutes(current, 30) <= endDate) {
-      const slotStart = formatDateTime(current.toISOString());
-      const slotEnd = formatDateTime(addMinutes(current, 30).toISOString());
-
-      // Extract only the time part (HH:mm:ss) from ISO string
-      const timeOnlyStart = current.toLocaleTimeString('en-US', { hour12: false });
-      const timeOnlyEnd = addMinutes(current, 30).toLocaleTimeString('en-US', { hour12: false });
-
-      // Push only the time range (HH:mm:ss - HH:mm:ss) to potential slots
+    while (addMinutes(current, maxDuration) <= endDate) {
+      const timeOnlyStart = current.toLocaleTimeString("en-US", { hour12: false });
+      const timeOnlyEnd = addMinutes(current, maxDuration).toLocaleTimeString("en-US", { hour12: false });
       potentialSlots.push(`${timeOnlyStart} - ${timeOnlyEnd}`);
-      current = addMinutes(current, 30);
+      current = addMinutes(current, maxDuration);
     }
   });
 
   // Fetch existing bookings for the court on the given date
   const existingBookings = await ReadCourtBookingsByCourtIdAndDate(courtId, date);
 
-  // Count overlaps for each potential slot
+  // Get the current IST time
+  const now = new Date();
+  const currentISTTime = new Date(now.getTime() + (330 * 60 * 1000)); // IST is UTC+5:30
+
+  // Count overlaps for each potential slot and filter out past slots
   const availableSlots: string[] = [];
 
   potentialSlots.forEach((potentialSlot) => {
     const [potentialStart, potentialEnd] = potentialSlot.split("-");
-    const potentialStartDate = new Date(`${date}T${potentialStart}:00`).getTime();
-    const potentialEndDate = new Date(`${date}T${potentialEnd}:00`).getTime();
+    const potentialStartDate = new Date(`${date}T${potentialStart}:00+05:30`).getTime();
+    const potentialEndDate = new Date(`${date}T${potentialEnd}:00+05:30`).getTime();
+
+    // Skip slots that are before the current IST time
+    if (potentialStartDate < currentISTTime.getTime()) {
+      return;
+    }
 
     let overlapCount = 0;
 
@@ -1496,11 +1495,13 @@ export async function GenerateAvailableTimeSlots(
       availableSlots.push(potentialSlot);
     }
   });
-  console.log("Details Here : ", {
-date,
-courtId,
-availableSlots
-  })
+
+  console.log("Details Here: ", {
+    date,
+    courtId,
+    availableSlots,
+    currentISTTime: currentISTTime.toISOString(),
+  });
 
   return availableSlots;
 }
@@ -1529,6 +1530,46 @@ export async function ReadCourtRequestsByRequestedBy() {
   }
   const userId = await getUserId(user.email!);
 console.log(userId);
+try {
+  const bookings = await database.listDocuments(
+    process.env.DATABASE_ID!,
+    process.env.COURTBOOKINGS_COLLECTION_ID!,
+    [
+      Query.equal("status", ["reserved"])
+    ]
+  );
+  
+  const currentISTTime = new Date();
+  currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
+  
+  const currentDateIST = currentISTTime.toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+  
+  bookings.documents.forEach(async (booking) => {
+    const bookingStartDate = new Date(booking.start);
+    const bookingDate = bookingStartDate.toISOString().split("T")[0]; // Extract date in YYYY-MM-DD format
+  
+    if (
+      bookingDate === currentDateIST && // Check if the booking is for today
+      currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
+    ) {
+      await database.updateDocument(
+        process.env.DATABASE_ID!,
+    process.env.COURTBOOKINGS_COLLECTION_ID!,
+    booking.$id,
+    {
+      status:"late"
+    }
+      )
+    }
+  });
+  
+  
+} catch (error) {
+  console.error("Failed to read court booking requests:", error);
+  throw new Error("Failed to read court booking requests");
+}
+
+
   try {
     const bookings = await database.listDocuments(
       process.env.DATABASE_ID!,
