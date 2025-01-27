@@ -3,6 +3,7 @@
     "use client";
 
     import { useState, useEffect, FormEvent } from "react";
+    import { useDebouncedCallback } from 'use-debounce';
     import { useRouter } from "next/navigation";
     import {
     Card,
@@ -45,6 +46,7 @@ interface User {
     const [currentEntry, setcurrentEntry] = useState<string>("");
     const [companionEmails, setCompanionEmails] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isEmailSubmitting, setIsEmailSubmitting] = useState(false);
     const [addButton, setAddButton] = useState(true);
     const [user, setUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
@@ -136,11 +138,14 @@ interface User {
       fetchAvailableSlots();
 
     }, [selectedDate, court]);
+    const debouncedUpdateEmail = useDebouncedCallback((index: number, value: string) => {
+      const updatedEmails = [...companionEmails];
+      updatedEmails[index] = value;
+      setCompanionEmails(updatedEmails);
+    }, 300);
   
     const handleCompanionEmailChange = (index: number, value: string) => {
-            const updatedEmails = [...companionEmails];
-            updatedEmails[index] = value;
-            setCompanionEmails(updatedEmails);
+      debouncedUpdateEmail(index, value);
     };
   
 
@@ -235,7 +240,6 @@ interface User {
             if (companionUserIds.includes(companionUser.$id)){
               return { canReserve: false, message: `You are trying to sneek in multiple same email ids` };
             }
-            else
             companionUserIds.push(companionUser.$id);
           } else {
             return { canReserve: false, message: `User with email ${email} not found.` };
@@ -275,15 +279,19 @@ interface User {
 
     console.log(permission);
 
-    const handleCompanionEmailsSubmit = () => {
-      if (isUpdating) {
-        // Clear and update array with new emails
-        setCompanionEmails([...companionEmails]);
-      } else {
-        // First submission: Push all emails
-        setCompanionEmails([...companionEmails]);
+    const handleCompanionEmailsSubmit = async () => {
+      setIsEmailSubmitting(true);
+      try {
+        // Your submission logic/API calls here
+        if (isUpdating) {
+          setCompanionEmails([...companionEmails]);
+        } else {
+          setCompanionEmails([...companionEmails]);
+        }
+        setIsUpdating(true);
+      } finally {
+        setIsEmailSubmitting(false);
       }
-      setIsUpdating(true); // Change button state to "Update Changes"
     };
   
     return (
@@ -391,38 +399,46 @@ interface User {
               </div>
   
               {/* Companion Emails */}
-                <div className="grid gap-2">
-                  <Label>Companion Emails</Label>
-                  {maxComp === 0 ? (
-                    <p>No companions needed.</p>
-                  ) : (
-                    <div>
-                      {Array.from({ length: maxComp }).map((_, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Input
-                            type="email"
-                            placeholder={`Companion ${index + 1} Email`}
-                            value={companionEmails[index] || ""}
-                            onChange={(e) =>
-                              handleCompanionEmailChange(index, e.target.value)
-                            }
-                            required
-                          />
+              <div className="grid gap-4">
+                <Label>Companion Emails</Label>
+                {maxComp === 0 ? (
+                  <p>No companions needed.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {Array.from({ length: maxComp }).map((_, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input
+                          type="email"
+                          placeholder={`Companion ${index + 1} Email`}
+                          defaultValue={companionEmails[index] || ""} // Uncontrolled input
+                          onChange={(e) => handleCompanionEmailChange(index, e.target.value)}
+                          required
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      onClick={handleCompanionEmailsSubmit}
+                      disabled={
+                        companionEmails.length < maxComp || 
+                        companionEmails.some(email => email.trim() === "") ||
+                        isEmailSubmitting
+                      }
+                      className="mt-2"
+                    >
+                      {isEmailSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <Loading/>
+                          {isUpdating ? "Updating..." : "Adding..."}
                         </div>
-                      ))}
-                      <Button
-                        type="button"
-                        onClick={handleCompanionEmailsSubmit}
-                        disabled={companionEmails.length < maxComp || companionEmails.some((email) => email.trim() === "")}
-                      >
-                        {isUpdating ? "Update Changes" : "Add Companions"}
-                      </Button>
-                    </div>
-                  )}
-                  <small className="text-muted-foreground">
-                    Enter the email addresses of your {maxComp} companions.
-                  </small>
-                </div>
+                      ) : isUpdating ? "Update Changes" : "Add Companions"}
+                    </Button>
+                  </div>
+                )}
+                <small className="text-muted-foreground mt-2">
+                  Enter the email addresses of your {maxComp} companions.
+                </small>
+              </div>
 
   
               {/* Submit Button */}
