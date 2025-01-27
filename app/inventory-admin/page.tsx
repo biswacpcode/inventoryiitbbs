@@ -10,7 +10,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ReadItemsInSociety, DeleteInventoryItem, UpdateInventoryItem, checkRole, ReadInventoryItems, ReadInventoryCourts } from "@/lib/actions"; 
+import { ReadItemsInSociety, DeleteInventoryItem, UpdateInventoryItem, checkRole, ReadInventoryItems, ReadInventoryCourts, DeleteCourtItem } from "@/lib/actions"; 
 import Link from "next/link";
 import Loading from "@/components/shared/Loader";
 import { Check, SearchIcon, X } from "lucide-react";
@@ -120,6 +120,18 @@ interface InventoryItem {
         fetchItems(); // Refetch items after successful deletion
       } catch (error) {
         console.error("Failed to delete the item:", error);
+      } finally {
+        setLoading(null); // Reset loading state
+      }
+    }
+
+    async function handleCourtDelete(itemId: string) {
+      setLoading(itemId); // Set loading for the specific item
+      try {
+        await DeleteCourtItem(itemId);
+        fetchCourts(); // Refetch items after successful deletion
+      } catch (error) {
+        console.error("Failed to delete the court:", error);
       } finally {
         setLoading(null); // Reset loading state
       }
@@ -382,7 +394,7 @@ interface InventoryItem {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleDelete(court.$id)}
+                          onClick={() => handleCourtDelete(court.$id)}
                         >
                           <TrashIcon className="h-4 w-4" />
                         </Button>

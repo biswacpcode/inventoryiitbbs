@@ -226,9 +226,10 @@ interface User {
   
     const checkReservations = async (userId: string, companionEmails: string[], date: string) => {
       // Check if user and companions have ongoing reservations
+      const compEmails = [...companionEmails, user?.email]
       const companionUserIds: string[] = [];
-      for (const email of companionEmails) {
-        const companionUser = await ServerReadUserByEmail(email);
+      for (const email of compEmails) {
+        const companionUser = await ServerReadUserByEmail(email!);
         if (companionUser) {
           companionUserIds.push(companionUser.$id);
         } else {

@@ -946,7 +946,45 @@ export async function DeleteInventoryItem(
         );
     }
 
-    revalidatePath(`/inventory-check`);
+    revalidatePath(`/inventory-admin`);
+  } catch (error) {
+    console.error("Failed to delete booking request:", error);
+    throw new Error("Failed to delete booking request");
+  }
+}
+
+export async function DeleteCourtItem(
+  itemId: string,
+) {
+  const user = await getUser();
+
+  if (!user) {
+    return redirect("/");
+  }
+
+  try {
+    // Deleting the document from the Appwrite database
+    await database.deleteDocument(
+      process.env.DATABASE_ID!,
+      process.env.COURTS_COLLECTION_ID!,
+      itemId
+    );
+
+    const response = await database.listDocuments(
+      process.env.DATABASE_ID!,
+      process.env.COURTBOOKINGS_COLLECTION_ID!,
+      [Query.equal("courtId", [itemId])]
+    );
+
+    for (const doc of response.documents){
+      await database.deleteDocument(
+        process.env.DATABASE_ID!,
+        process.env.COURTBOOKINGS_COLLECTION_ID!,
+        doc.$id
+        );
+    }
+
+    revalidatePath(`/inventory-admin`);
   } catch (error) {
     console.error("Failed to delete booking request:", error);
     throw new Error("Failed to delete booking request");
