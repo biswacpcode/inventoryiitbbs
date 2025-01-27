@@ -117,7 +117,7 @@ await ModifyCourtItem(item.$id, uploadformdata);
       // Handle error appropriately (e.g., show a notification)
     } finally {
       setIsLoading(false);
-      window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/inventory-admin/${params.id}`;
+      window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/court-modify/${params.id}`;
     }
   };
 
@@ -127,7 +127,7 @@ await ModifyCourtItem(item.$id, uploadformdata);
 };
 const modalClose= () => {
     setModalOpen(false)
-    window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/inventory-admin/${params.id}`; // Reload
+    window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/court-modify/${params.id}`; // Reload
 };
   
 
