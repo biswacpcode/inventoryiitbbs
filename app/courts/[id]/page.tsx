@@ -226,15 +226,25 @@ interface User {
   
     const checkReservations = async (userId: string, companionEmails: string[], date: string) => {
       // Check if user and companions have ongoing reservations
-      const compEmails = [...companionEmails, user?.email]
+      
       const companionUserIds: string[] = [];
-      for (const email of compEmails) {
-        const companionUser = await ServerReadUserByEmail(email!);
-        if (companionUser) {
-          companionUserIds.push(companionUser.$id);
+      for (const email of companionEmails) {
+        if (email!==user?.email) {
+          const companionUser = await ServerReadUserByEmail(email!);
+          if (companionUser) {
+            if (companionUserIds.includes(companionUser.$id)){
+              return { canReserve: false, message: `You are trying to sneek in multiple same email ids` };
+            }
+            else
+            companionUserIds.push(companionUser.$id);
+          } else {
+            return { canReserve: false, message: `User with email ${email} not found.` };
+          }
         } else {
-          return { canReserve: false, message: `User with email ${email} not found.` };
+          return { canReserve: false, message: `You are trying to sneek in your own email id` };
         }
+        
+        
       }
   
       // Combine user ID and companion IDs
