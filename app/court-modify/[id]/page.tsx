@@ -21,7 +21,7 @@ import  Input  from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { JSX, SVGProps, useState, useEffect, FormEvent } from "react";
-import { ReadInventoryItemById, CreateBookingRequest, ReadUserById, CreateInventoryItem, fetchUsersByRole, UpdateImage, ModifyInventoryItem, checkRole, ReadCourtById } from "@/lib/actions";
+import { ReadInventoryItemById, CreateBookingRequest, ReadUserById, CreateInventoryItem, fetchUsersByRole, UpdateImage, ModifyInventoryItem, checkRole, ReadCourtById, ModifyCourtItem } from "@/lib/actions";
 import Loading from "@/components/shared/Loader";
 import { Models } from "node-appwrite";
 import Modal from "@/components/shared/Modal";
@@ -64,27 +64,19 @@ export default function Component({ params }: { params: { id: string } }) {
 
     setIsLoading(true);
     const formdata = new FormData(e.currentTarget);
-      const changedSociety = formdata.get("society");
-      const changedCouncil = formdata.get("council");
-      const changedStatus = formdata.get("defaultStatus");
-      const parts = (item.itemImage).split('/');
+      const parts = (item.courtImage).split('/');
         const fileId = parts[parts.indexOf("files") + 1];
       const imageFile = formdata.get("itemImage") as File;
-      const society = (changedSociety)? changedSociety : item.society;
-      
-      const council = (changedCouncil)?changedCouncil: item.council;
-      
-      const status = (changedStatus)?changedStatus : item.defaultStatus;
-      const itemName = formdata.get("court-name") !== '' ? formdata.get("court-name") : item.courtName;
-      const description = formdata.get("description") !== '' ? formdata.get("description") : item.description;
-      const totalQuantity = formdata.get("total-quantity") !== '' ? parseInt(formdata.get("total-quantity") as string, 10) : item.totalQuantity;
-      const availableQuantity = formdata.get("available-quantity") !== '' ? parseInt(formdata.get("available-quantity") as string, 10) : item.availableQuantity;
-      const maxQuantity = formdata.get("allowed-quantity") !== '' ? parseInt(formdata.get("allowed-quantity") as string, 10) : item.maxQuantity;
-      const maxTime = formdata.get("allowed-time") !== '' ? parseInt(formdata.get("allowed-time") as string, 10) : item.maxTime;
-    let itemImage;
+      const courtName = formdata.get("court-name") !== '' ? formdata.get("court-name") : item.courtName;
+      const location = formdata.get("court-location") !== '' ? formdata.get("court-location") : item.location;
+      const timeSlots = formdata.get("time-slots") !== '' ? formdata.get("time-slots") : item.timeSlots;
+      const totalCourts = formdata.get("total-courts") !== '' ? parseInt(formdata.get("total-courts") as string, 10) : item.totalCourts;
+      const minUsers = formdata.get("min-users") !== '' ? parseInt(formdata.get("min-users") as string, 10) : item.minUsers;
+      const maxTime = formdata.get("max-time") !== '' ? parseInt(formdata.get("max-time") as string, 10) : item.maxTime;
+    let courtImage;
 
     try {
-        itemImage = imageFile && imageFile.size > 0 ? await UpdateImage(fileId, formdata) : item.itemImage;
+        courtImage = imageFile && imageFile.size > 0 ? await UpdateImage(fileId, formdata) : item.courtImage;
     }catch(error){
         console.error("Error in uploading new image", error);
         throw new Error("Error in uploading new image");
@@ -93,34 +85,28 @@ export default function Component({ params }: { params: { id: string } }) {
         
 try{
 const isEqualToItemValues = 
-    itemName === item.itemName &&
-    itemImage === item.itemImage &&
-    description === item.description &&
-    totalQuantity === item.totalQuantity &&
-    availableQuantity === item.availableQuantity &&
-    maxQuantity === item.maxQuantity &&
-    maxTime === item.maxTime &&
-    society === item.society &&
-    council === item.council &&
-    status === item.defaultStatus;
+    courtName === item.courtName &&
+    courtImage === item.courtImage &&
+    location === item.location &&
+    totalCourts === item.totalCourts &&
+    minUsers === item.minUsers &&
+    timeSlots === item.timeSlots &&
+    maxTime === item.maxTime;
     if(isEqualToItemValues)
     {
         setModalOpen(true);
     } else{
         const uploadformdata = new FormData();
-uploadformdata.append("itemName", itemName);
-uploadformdata.append("itemImage", itemImage);
-uploadformdata.append("description", description);
-uploadformdata.append("total-quantity", totalQuantity);
-uploadformdata.append("available-quantity", availableQuantity);
-uploadformdata.append("allowed-quantity", maxQuantity);
+uploadformdata.append("courtName", courtName);
+uploadformdata.append("courtImage", courtImage);
+uploadformdata.append("location", location);
+uploadformdata.append("timeSlots", timeSlots);
+uploadformdata.append("total-courts", totalCourts);
+uploadformdata.append("min-users", minUsers);
 uploadformdata.append("allowed-time", maxTime);
-uploadformdata.append("society", society);
-uploadformdata.append("council", council);
-uploadformdata.append("defaultStatus", status);
 
 
-await ModifyInventoryItem(item.$id, uploadformdata);
+await ModifyCourtItem(item.$id, uploadformdata);
     }
 
 
@@ -191,7 +177,7 @@ const modalClose= () => {
               <Input
                 id="court-image"
                 type="file"
-                name="courtImage"
+                name="itemImage"
                 accept="image/*"
               />
             </div>

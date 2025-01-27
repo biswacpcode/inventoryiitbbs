@@ -346,6 +346,46 @@ export async function ModifyInventoryItem(itemId: string, formdata: FormData) {
   }
 }
 
+//Modify Inventory Item
+export async function ModifyCourtItem(itemId: string, formdata: FormData) {
+  // VERIFYING USER
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/");
+    return;
+  }
+
+  // EXTRACTING FORM DATA
+  const courtName = formdata.get("courtName") as string;
+  const courtImage = formdata.get("courtImage") as string; // Corrected key
+  const totalCourts = parseInt(formdata.get("total-courts") as string, 10);
+  const minUsers = parseInt(formdata.get("available-quantity") as string, 10);
+  const location = formdata.get("location") as string;
+  const timeSlots = formdata.get("timeSlots") as string;
+  const maxTime = parseInt(formdata.get("allowed-time") as string, 10);
+
+  try{
+    await database.updateDocument(
+      process.env.DATABASE_ID!,              // Your Appwrite database ID
+      process.env.ITEMS_COLLECTION_ID!,
+      itemId,
+      {
+        courtName:courtName,
+        courtImage:courtImage,
+        location: location,
+        totalCourts: totalCourts,
+        maxTime: maxTime,
+        minUsers:minUsers,
+        timeSlots:timeSlots
+      }
+    )
+  }catch(error){
+    console.error("Failed to modify inventory", error);
+    throw new Error("Failed to modify inventory");
+  }
+}
+
 
 
 
