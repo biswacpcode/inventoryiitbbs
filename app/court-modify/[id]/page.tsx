@@ -167,7 +167,7 @@ const modalClose= () => {
                 id="court-name"
                 name="court-name"
                 placeholder={item.courtName}
-                required
+                
               />
             </div>
             <div className="grid gap-2">
@@ -192,7 +192,7 @@ const modalClose= () => {
               id="court-location"
               name="court-location"
               placeholder={item.location}
-              required
+              
             />
           </div>
 
@@ -207,7 +207,7 @@ const modalClose= () => {
                 name="total-courts"
                 type="number"
                 placeholder={item.totalCourts}
-                required
+                
               />
             </div>
             <div className="grid gap-2">
@@ -219,7 +219,7 @@ const modalClose= () => {
                 name="max-time"
                 type="number"
                 placeholder={item.maxTime}
-                required
+                
               />
             </div>
           </div>
@@ -234,7 +234,7 @@ const modalClose= () => {
               name="min-users"
               type="number"
               placeholder={item.minUsers}
-              required
+              
             />
           </div>
 
@@ -247,7 +247,7 @@ const modalClose= () => {
               id="time-slots"
               name="time-slots"
               placeholder={item.timeSlots}
-              required
+              
             />
             <small className="text-muted-foreground">
               Example: Monday:- 05:00-10:00, 17:00-21:00; Tuesday:- 05:00-10:00, 17:00-21:00
