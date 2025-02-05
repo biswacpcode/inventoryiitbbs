@@ -162,7 +162,7 @@ export async function CreateInventoryCourt(formdata: FormData) {
   const courtName = formdata.get("court-name") as string;
   const courtImage = formdata.get("courtImage") as File;
   const location = formdata.get("court-location") as string;
-  const totalCourts = parseInt(formdata.get("total-courts") as string, 10);
+  const type = formdata.get("type") as string;
   const maxTime = parseInt(formdata.get("max-time") as string, 10);
   const minUsers = parseInt(formdata.get("min-users") as string, 10);
   const timeSlotsRaw = formdata.get("time-slots") as string;
@@ -230,7 +230,7 @@ export async function CreateInventoryCourt(formdata: FormData) {
         courtName,
         courtImage: courtImageUrl,
         location,
-        totalCourts,
+        type,
         maxTime,
         minUsers,
         timeSlots: JSON.stringify(timeSlots), // Store as JSON string
@@ -359,7 +359,7 @@ export async function ModifyCourtItem(itemId: string, formdata: FormData) {
   // EXTRACTING FORM DATA
   const courtName = formdata.get("courtName") as string;
   const courtImage = formdata.get("courtImage") as string; // Corrected key
-  const totalCourts = parseInt(formdata.get("total-courts") as string, 10);
+  const type= formdata.get("type") as string;
   const minUsers = parseInt(formdata.get("min-users") as string, 10);
   const location = formdata.get("location") as string;
   const timeSlots = formdata.get("timeSlots") as string;
@@ -375,7 +375,7 @@ export async function ModifyCourtItem(itemId: string, formdata: FormData) {
         courtName:courtName,
         courtImage:courtImage,
         location: location,
-        totalCourts: totalCourts,
+        type: type,
         maxTime: maxTime,
         minUsers:minUsers,
         timeSlots:timeSlots
@@ -1417,6 +1417,34 @@ const bookings = await database.listDocuments(
   }
 }
 
+
+export async function ReadCourtBookingsByCourtTypeAndDate(
+  courtType: string,
+  date: string
+): Promise<Models.Document[]> {
+  try {
+    const startOfDay = new Date(`${date}T00:00:00`).toISOString();
+const endOfDay = new Date(`${date}T23:59:59`).toISOString();
+
+const bookings = await database.listDocuments(
+  process.env.DATABASE_ID!,
+  process.env.COURTBOOKINGS_COLLECTION_ID!,
+  [
+    Query.equal("type", [courtType]),
+    Query.greaterThanEqual("start", startOfDay),
+    Query.lessThanEqual("start", endOfDay),
+  ]
+);
+
+
+
+    return bookings.documents;
+  } catch (error) {
+    console.error("Error fetching court bookings:", error);
+    throw new Error("Failed to fetch court bookings.");
+  }
+}
+
 //Read user by email
 export async function ReadUserByEmail(email: string): Promise<Models.Document | null> {
   try {
@@ -1445,7 +1473,9 @@ export async function CreateCourtRequest(data: {
   requestedUser: string;
   companions: string[];
   date: string; // YYYY-MM-DD
-  timeSlot: string; // e.g., "05:00-06:00"
+  timeSlot: string;
+   // e.g., "05:00-06:00"
+   type:string;
 }): Promise<string> {
   // VERIFYING USER
   const user = await getUser();
@@ -1456,7 +1486,7 @@ export async function CreateCourtRequest(data: {
   }
   const userId = await getUserId(user.email!);
 
-  const { courtId, courtName, requestedUser, companions, date, timeSlot } = data;
+  const { courtId, courtName, requestedUser, companions, date, timeSlot, type } = data;
 
   // Parse timeSlot
   const [startTime, endTime] = timeSlot.split("-");
@@ -1485,7 +1515,8 @@ export async function CreateCourtRequest(data: {
         end,
         status: "reserved", // Initial status
         requestedUser : userId,
-        companions: companions.join(","), // Array of user IDs
+        companions: companions.join(","),
+        type
       }
     );
 
@@ -1570,7 +1601,7 @@ export async function GenerateAvailableTimeSlots(
       }
     });
 
-    if (overlapCount < court.totalCourts) {
+    if (overlapCount < 1) {
       availableSlots.push(potentialSlot);
     }
   });
@@ -1625,6 +1656,7 @@ try {
   
   bookings.documents.forEach(async (booking) => {
     const bookingStartDate = new Date(booking.start);
+    bookingStartDate.setMinutes(bookingStartDate.getMinutes() + 330);
     const bookingDate = bookingStartDate.toISOString().split("T")[0]; // Extract date in YYYY-MM-DD format
   
     if (

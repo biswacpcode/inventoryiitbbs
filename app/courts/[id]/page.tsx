@@ -22,7 +22,7 @@
     import { JSX, SVGProps } from "react";
 
     // Import server-side functions
-    import { ReadCourtBookingsByCourtIdAndDate, ReadCourtById as ServerReadCourtById } from "@/lib/actions";
+    import { ReadCourtBookingsByCourtIdAndDate, ReadCourtBookingsByCourtTypeAndDate, ReadCourtById as ServerReadCourtById } from "@/lib/actions";
     import { GenerateAvailableTimeSlots as ServerGenerateAvailableTimeSlots } from "@/lib/actions";
     import { ReadUserByEmail as ServerReadUserByEmail } from "@/lib/actions";
     import { CreateCourtRequest as ServerCreateCourtRequest } from "@/lib/actions";
@@ -194,6 +194,7 @@ interface User {
           companions: companionUserIds,
           date: selectedDate,
           timeSlot: selectedTimeSlot,
+          type: court!.type
         });
         router.push('/requests'); // Redirect to your reservations page
       } catch (error: any) {
@@ -204,7 +205,7 @@ interface User {
       }
     };
      const checkPermission = async (userId: string, date: string) => {
-        const existingBookings = await ReadCourtBookingsByCourtIdAndDate(params.id, date);
+        const existingBookings = await ReadCourtBookingsByCourtTypeAndDate(court!.type, date);
         console.log(userId)
         for (const booking of existingBookings) {
             if (

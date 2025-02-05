@@ -273,18 +273,24 @@ export default function AddInventoryTabs({ societies, councils }: AddInventoryTa
 
           {/* Total Courts and Max Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="total-courts" className="text-sm font-medium">
-                Total Number of Courts
-              </Label>
-              <Input
-                id="total-courts"
-                name="total-courts"
-                type="number"
-                placeholder="Enter total number of courts"
-                required
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="type" className="text-sm font-medium">
+              Type Of Court
+            </Label>
+            <Select name="type" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Type of Court" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Statuses</SelectLabel>
+                  <SelectItem value="Badminton">Badminton</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Volleyball">Volleyball</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
             <div className="grid gap-2">
               <Label htmlFor="max-time" className="text-sm font-medium">
                 Maximum Time for User (in hours)

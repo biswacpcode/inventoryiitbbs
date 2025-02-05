@@ -70,7 +70,7 @@ export default function Component({ params }: { params: { id: string } }) {
       const courtName = formdata.get("court-name") !== '' ? formdata.get("court-name") : item.courtName;
       const location = formdata.get("court-location") !== '' ? formdata.get("court-location") : item.location;
       const timeSlots = formdata.get("time-slots") !== '' ? formdata.get("time-slots") : item.timeSlots;
-      const totalCourts = formdata.get("total-courts") !== '' ? parseInt(formdata.get("total-courts") as string, 10) : item.totalCourts;
+      const type = formdata.get("type") !== '' ? formdata.get("type") : item.type;
       const minUsers = formdata.get("min-users") !== '' ? parseInt(formdata.get("min-users") as string, 10) : item.minUsers;
       const maxTime = formdata.get("max-time") !== '' ? parseInt(formdata.get("max-time") as string, 10) : item.maxTime;
     let courtImage;
@@ -88,7 +88,7 @@ const isEqualToItemValues =
     courtName === item.courtName &&
     courtImage === item.courtImage &&
     location === item.location &&
-    totalCourts === item.totalCourts &&
+    type === item.type &&
     minUsers === item.minUsers &&
     timeSlots === item.timeSlots &&
     maxTime === item.maxTime;
@@ -101,7 +101,7 @@ uploadformdata.append("courtName", courtName);
 uploadformdata.append("courtImage", courtImage);
 uploadformdata.append("location", location);
 uploadformdata.append("timeSlots", timeSlots);
-uploadformdata.append("total-courts", totalCourts);
+uploadformdata.append("type", type);
 uploadformdata.append("min-users", minUsers);
 uploadformdata.append("allowed-time", maxTime);
 
@@ -198,18 +198,24 @@ const modalClose= () => {
 
           {/* Total Courts and Max Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="total-courts" className="text-sm font-medium">
-                Total Number of Courts
-              </Label>
-              <Input
-                id="total-courts"
-                name="total-courts"
-                type="number"
-                placeholder={item.totalCourts}
-                
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="type" className="text-sm font-medium">
+              Type Of Court
+            </Label>
+            <Select name="type" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Type of Court" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Statuses</SelectLabel>
+                  <SelectItem value="Badminton">Badminton</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Volleyball">Volleyball</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
             <div className="grid gap-2">
               <Label htmlFor="max-time" className="text-sm font-medium">
                 Maximum Time for User (in hours)
