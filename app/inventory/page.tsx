@@ -77,9 +77,9 @@ export default function InventoryPage() {
     return <Loading />;
   }
 
-  if (items.length === 0 && courts.length === 0) {
-    return <p>No data found</p>;
-  }
+  // if (items.length === 0 || courts.length === 0) {
+  //   return <p>No data found</p>;
+  // }
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8">

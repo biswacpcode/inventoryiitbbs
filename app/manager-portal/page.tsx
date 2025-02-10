@@ -51,7 +51,7 @@ export default function Component() {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const html5QrCodeScannerRef = useRef<Html5QrcodeScanner | null>(null);
 
-  // Check user role and decide whether to fetch data or redirect
+  // Check user role and decide whether to fetch data or redirect456
   async function checkAuthorization() {
     const isManager = await checkRole("Manager");
     if (!isManager) {
