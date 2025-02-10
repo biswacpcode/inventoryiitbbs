@@ -84,7 +84,7 @@ export default function AddInventoryTabs({ societies, councils }: AddInventoryTa
                 type="file"
                 name="itemImage"
                 accept="image/*"
-                required
+                
               />
             </div>
           </div>
