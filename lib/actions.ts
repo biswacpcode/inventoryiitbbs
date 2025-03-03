@@ -391,6 +391,7 @@ export async function ModifyCourtItem(itemId: string, formdata: FormData) {
     throw new Error("Invalid or missing time slots format.");
   }
 
+  console.log(timeSlots);
   try{
     await database.updateDocument(
       process.env.DATABASE_ID!,              // Your Appwrite database ID
@@ -403,7 +404,7 @@ export async function ModifyCourtItem(itemId: string, formdata: FormData) {
         type: type,
         maxTime: maxTime,
         minUsers:minUsers,
-        timeSlots:timeSlots
+        timeSlots:JSON.stringify(timeSlots)
       }
     )
   }catch(error){
