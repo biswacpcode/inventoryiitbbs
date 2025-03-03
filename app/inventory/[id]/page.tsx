@@ -56,6 +56,8 @@ export default function Component({ params }: { params: { id: string } }) {
   const handleQuantityChange = (e: any) => {
     const value = parseInt(e.target.value, 10);
     setZyada(isNaN(value) || (value > item.availableQuantity && value > 0) || value > item.maxQuantity);
+    if (value === 0 )
+      setZyada(true)
   };
 
  
@@ -64,20 +66,7 @@ export default function Component({ params }: { params: { id: string } }) {
 
   
   
-  const handlePurposeChange = (e: any) => {
-    const purposeValue = e.target.value;
-    setPurpose(purposeValue);
-    setPurLength(purposeValue.length);
-    checkEmptyFields(purposeValue);
-  };
-  
 
-  const checkEmptyFields = (
-    purpose: string
-  ) => {
-    const isAnyFieldEmpty =!purpose.trim();
-    setZyada(isAnyFieldEmpty);
-  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -136,8 +125,8 @@ export default function Component({ params }: { params: { id: string } }) {
           itemName: item.itemName,
           bookedQuantity: bookedQuantity.toString(),
           purpose: purpose,
-          approveLink: `https://inventory-iitbbs.webnd-iitbbs.org/items-requests?approveId=${requestId}`,
-          rejectLink: `https://inventory-iitbbs.webnd-iitbbs.org/items-requests?rejectId=${requestId}`
+          approveLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?approveId=${requestId}`,
+          rejectLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?rejectId=${requestId}`
         };
  // Call the API route to send the email
         await fetch('/api/send-booking-email', {
@@ -248,26 +237,12 @@ export default function Component({ params }: { params: { id: string } }) {
                 onChange={handleQuantityChange}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="purpose">Purpose (Required)</Label>
-              <Textarea
-                id="purpose"
-                rows={3}
-                name="purpose"
-                value={purpose}
-                onChange={handlePurposeChange}
-              />
-            </div>
             {isLoading ?
             <Loading/> :
             <Button
               size="lg"
               className="w-full"
-              style={{
-                cursor: zyada ? "not-allowed" : "pointer",
-                pointerEvents: zyada ? "none" : "auto",
-              }}
-              disabled={zyada || purLength===0}
+              disabled={zyada}
             >
               Reserve Item
             </Button>

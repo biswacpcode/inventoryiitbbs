@@ -40,7 +40,7 @@ export default function Page() {
         const isSociety = await checkRole('Society');
         if (!isSociety) {
           alert('You are unauthorized.');
-          window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/';
+          window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}`;
         } else {
           fetchItems(); // Fetch data if authorized
           handleURLParams(); // Handle query parameters
@@ -80,15 +80,15 @@ export default function Page() {
 
     const isValidSociety = await validSociety(requestId);
     if (!isValidSociety) {
-      window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
+      window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}`;
     } else {
       if (approveId) {
         await approveItem(approveId, 'approved');
-        window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
+        window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests`;
       }
       if (rejectId) {
         await approveItem(rejectId, 'rejected');
-        window.location.href = 'https://inventory-iitbbs.webnd-iitbbs.org/items-requests';
+        window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests`;
       }
     }
   }

@@ -40,7 +40,7 @@ export default function Component({ params }: { params: { id: string } }) {
         if (!isAdmin) {
           alert("You are unauthorized.");
            // Redirect if unauthorized
-           window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/";
+           window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}`;
         } else {
           fetchItem(); // Fetch data if authorized
         }
@@ -117,17 +117,17 @@ await ModifyCourtItem(item.$id, uploadformdata);
       // Handle error appropriately (e.g., show a notification)
     } finally {
       setIsLoading(false);
-      window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/court-modify/${params.id}`;
+      window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/court-modify/${params.id}`;
     }
   };
 
   if (!item) return <Loading/>;
   const goToInventory = () => {
-    window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/inventory-admin"; // Redirect to inventory
+    window.location.href =`${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/inventory-admin`; // Redirect to inventory
 };
 const modalClose= () => {
     setModalOpen(false)
-    window.location.href = `https://inventory-iitbbs.webnd-iitbbs.org/court-modify/${params.id}`; // Reload
+    window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/court-modify/${params.id}`; // Reload
 };
   
 

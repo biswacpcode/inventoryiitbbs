@@ -362,9 +362,34 @@ export async function ModifyCourtItem(itemId: string, formdata: FormData) {
   const type= formdata.get("type") as string;
   const minUsers = parseInt(formdata.get("min-users") as string, 10);
   const location = formdata.get("location") as string;
-  const timeSlots = formdata.get("timeSlots") as string;
+  const timeSlotsRaw = formdata.get("timeSlots") as string;
   const maxTime = parseInt(formdata.get("allowed-time") as string, 10);
+  const timeSlots: Record<string, string[]> = {};
 
+  if (timeSlotsRaw) {
+    console.log("raw entry passed");
+    const days = timeSlotsRaw.split(";");
+    console.log(days);
+    days.forEach((day) => {
+      const [dayName, slots] = day.split(":-");
+      console.log([dayName,slots]);
+      if (dayName && slots) {
+        const trimmedDay = dayName.trim();
+        const slotArray = slots
+          .split(",")
+          .map((slot) => slot.trim())
+          .filter((slot) => /^\d{2}:\d{2}-\d{2}:\d{2}$/.test(slot)); // Basic validation
+        if (slotArray.length > 0) {
+          timeSlots[trimmedDay] = slotArray;
+        }
+      }
+    });
+  }
+
+  // VALIDATE TIME SLOTS
+  if (Object.keys(timeSlots).length === 0) {
+    throw new Error("Invalid or missing time slots format.");
+  }
 
   try{
     await database.updateDocument(
@@ -1550,6 +1575,7 @@ export async function GenerateAvailableTimeSlots(
     return [];
   }
 
+  console.log(courtTimeSlots);
   // Generate all possible 30-minute interval time slots based on court's time slots
   let potentialSlots: string[] = [];
 
@@ -1738,52 +1764,59 @@ export async function ReadCourtRequest(requestId: string){
   return request;
 }
 
+export async function updateCourtRequestStatus(requestId: string) {
+  try {
+    const response = await database.getDocument(
+      process.env.DATABASE_ID!,
+      process.env.COURTBOOKINGS_COLLECTION_ID!,
+      requestId
+    );
 
-export async function updateCourtRequestStatus(requestId:string) {
-  try{
+    const currentTime = new Date().toISOString();
+    const startTime = new Date(response.start).toISOString();
 
-  
-  const response = await database.getDocument(
-    process.env.DATABASE_ID!,
-    process.env.COURTBOOKINGS_COLLECTION_ID!,
-    requestId
-  );
-
-
-  const status = (response.status==="reserved")? "punched-in":(response.status==="punched-in")?"punched-out":"late";
-  const currentTime = new Date().toISOString();
-    
-  await database.updateDocument(
-    process.env.DATABASE_ID!,
-    process.env.COURTBOOKINGS_COLLECTION_ID!,
-    requestId,
-    {
-      status: status
+    // Prevent punch-in or punch-out before the slot starts
+    if (currentTime < startTime) {
+      throw new Error("Punch-in or punch-out is not allowed before the slot starts.");
     }
-  );
 
-  if (status==="punched-in"){
+    const status =
+      response.status === "reserved"
+        ? "punched-in"
+        : response.status === "punched-in"
+        ? "punched-out"
+        : "late";
+
     await database.updateDocument(
       process.env.DATABASE_ID!,
       process.env.COURTBOOKINGS_COLLECTION_ID!,
       requestId,
       {
-        punchedInTime: currentTime
+        status: status
       }
     );
-  } else if( status ==="punched-out"){
-    await database.updateDocument(
-      process.env.DATABASE_ID!,
-      process.env.COURTBOOKINGS_COLLECTION_ID!,
-      requestId,
-      {
-        punchedOutTime: currentTime
-      }
-    );
+
+    if (status === "punched-in") {
+      await database.updateDocument(
+        process.env.DATABASE_ID!,
+        process.env.COURTBOOKINGS_COLLECTION_ID!,
+        requestId,
+        {
+          punchedInTime: currentTime
+        }
+      );
+    } else if (status === "punched-out") {
+      await database.updateDocument(
+        process.env.DATABASE_ID!,
+        process.env.COURTBOOKINGS_COLLECTION_ID!,
+        requestId,
+        {
+          punchedOutTime: currentTime
+        }
+      );
+    }
+  } catch (error) {
+    console.error("Failed to update the status of Court Request", error);
+    throw new Error("Failed to update the status of Court Request");
   }
-}catch(error){
-  console.error("Failed to update the status of Court Request", error);
-  throw new Error("Failed to update the status of Court Request");
-}
-
 }

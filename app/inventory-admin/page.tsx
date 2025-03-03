@@ -52,7 +52,7 @@ interface InventoryItem {
       if (!isAdmin) {
         alert("You are unauthorized.");
          // Redirect if unauthorized
-         window.location.href = "https://inventory-iitbbs.webnd-iitbbs.org/";
+         window.location.href = `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}`;
       } else {
         if (activeTab === "items") {
           fetchItems();
