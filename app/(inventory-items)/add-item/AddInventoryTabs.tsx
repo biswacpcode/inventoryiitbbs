@@ -287,6 +287,11 @@ export default function AddInventoryTabs({ societies, councils }: AddInventoryTa
                   <SelectItem value="Badminton">Badminton</SelectItem>
                   <SelectItem value="Basketball">Basketball</SelectItem>
                   <SelectItem value="Volleyball">Volleyball</SelectItem>
+                  <SelectItem value="Table Tennis">Table Tennis</SelectItem>
+                  <SelectItem value="Lawn Tennis">Lawn Tennis</SelectItem>
+                  <SelectItem value="Football">Football</SelectItem>
+                  <SelectItem value="Cricket">Cricket</SelectItem>
+                  <SelectItem value="Squash">Squash</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
