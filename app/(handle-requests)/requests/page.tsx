@@ -202,68 +202,86 @@ export default function Component() {
 
       {/* Table for Court Requests */}
       {activeTab === "courts" && (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Start Date/Time</TableHead>
-                <TableHead>End Date/Time</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...courtRequests].reverse().map((courtRequest) => (
-                <TableRow
-                  key={courtRequest.$id}
-                  className="border-b border-gray-200 hover:bg-muted"
+  <div className="overflow-x-auto">
+    <p className="text-sm font-medium text-gray-600 mb-2">
+      Click on the Name of the court for QR Code. Wait till your slot starts.
+    </p>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Start Date/Time</TableHead>
+          <TableHead>End Date/Time</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...courtRequests].reverse().map((courtRequest) => {
+          const currentTime = new Date();
+          const startTime = new Date(courtRequest.start); // This is in UTC
+          const startTimeIST = new Date(startTime.getTime() - 5.5 * 60 * 60 * 1000);
+          const endTime = new Date(courtRequest.end); // This is in UTC
+          const endTimeIST = new Date(endTime.getTime() - 5.5 * 60 * 60 * 1000);
+          const isSlotActive = (startTimeIST <= currentTime) && (currentTime <= endTimeIST) ;          
+
+          return (
+            <TableRow
+              key={courtRequest.$id}
+              className="border-b border-gray-200 hover:bg-muted"
+            >
+              <TableCell>
+                <div className="relative">
+                  <Link
+                    href={isSlotActive ? `/court-requests/${courtRequest.$id}` : "#"}
+                    
+                    className={`${
+                      isSlotActive ? "text-blue-600 hover:underline" : "text-gray-500"
+                    }`}
+                  >
+                    {courtRequest.courtName}
+                  </Link>
+                </div>
+              </TableCell>
+              <TableCell>{courtRequest.start}</TableCell>
+              <TableCell>{courtRequest.end}</TableCell>
+              <TableCell>
+                <Badge
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    courtRequest.status === "pending"
+                      ? "bg-yellow-200 text-yellow-800"
+                      : courtRequest.status === "approved"
+                      ? "bg-green-200 text-green-800"
+                      : courtRequest.status === "rejected"
+                      ? "bg-red-200 text-red-800"
+                      : "bg-gray-200 text-gray-800"
+                  }`}
                 >
-                  <TableCell>
-                    <Link href={`/court-requests/${courtRequest.$id}`}>
-                      {courtRequest.courtName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{courtRequest.start}</TableCell>
-                  <TableCell>{courtRequest.end}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        courtRequest.status === "pending"
-                          ? "bg-yellow-200 text-yellow-800"
-                          : courtRequest.status === "approved"
-                          ? "bg-green-200 text-green-800"
-                          : courtRequest.status === "rejected"
-                          ? "bg-red-200 text-red-800"
-                          : "bg-gray-200 text-gray-800"
-                      }`}
-                    >
-                      {courtRequest.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    {}
-                    {(loading && deleting==courtRequest.$id)? <Loading /> : 
-                    courtRequest.status !== "collected" && !loading && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          handleCourtDelete(
-                            courtRequest.$id// Quantity is not relevant for courts
-                          )
-                        }
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+                  {courtRequest.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="flex items-center gap-2">
+                {(loading && deleting === courtRequest.$id) ? (
+                  <Loading />
+                ) : courtRequest.status !== "collected" && !loading ? (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      handleCourtDelete(courtRequest.$id)
+                    }
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                ) : null}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  </div>
+)}
     </div>
   );
 }
