@@ -24,7 +24,7 @@ export default function Component({ params }: { params: { id: string } }) {
   const [societyEmail, setSocietyEmail] = useState<string>("");
     const [councilName, setCouncilName] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    // const [user, setUser] = useState<any>(null);
     const router = useRouter();
 
 
@@ -41,13 +41,13 @@ export default function Component({ params }: { params: { id: string } }) {
         setCouncilName(council.lastName);
 
     }
-    const response = await fetch('/api/user-info',{
-      method:'POST'
-    });
-    const data = await response.json();
-    const user = data.user;
-    setUser(user);
-    }
+    // const response = await fetch('/api/user-info',{
+    //   method:'POST'
+    // });
+    // const data = await response.json();
+    // const user = data.user;
+    // setUser(user);
+  }
 
     fetchItem();
   }, [params.id]);
@@ -122,31 +122,31 @@ export default function Component({ params }: { params: { id: string } }) {
 
       // Call the CreateBookingRequest function
       const requestId = await CreateBookingRequest(formData);
-      if (user && item.defaultStatus==="pending"){
-        const bookingDetails = {
-          requesterName: `${user.given_name} ${user.family_name}`,
-          itemName: item.itemName,
-          bookedQuantity: bookedQuantity.toString(),
-          purpose: purpose,
-          approveLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?approveId=${requestId}`,
-          rejectLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?rejectId=${requestId}`
-        };
- // Call the API route to send the email
-        await fetch('/api/send-booking-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipientEmail: `${societyEmail}`,
-            bookingDetails,
-          }),
-        });
-      }else{
-        await DeleteBookingRequest(requestId, item.$id, bookedQuantity);
-        alert("You may have been logged out. \nPlease try again");
-        router.push('/');
-      }
+//       if (user && item.defaultStatus==="pending"){
+//         const bookingDetails = {
+//           requesterName: `${user.given_name} ${user.family_name}`,
+//           itemName: item.itemName,
+//           bookedQuantity: bookedQuantity.toString(),
+//           purpose: purpose,
+//           approveLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?approveId=${requestId}`,
+//           rejectLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?rejectId=${requestId}`
+//         };
+//  // Call the API route to send the email
+//         await fetch('/api/send-booking-email', {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify({
+//             recipientEmail: `${societyEmail}`,
+//             bookingDetails,
+//           }),
+//         });
+//       }else{
+//         await DeleteBookingRequest(requestId, item.$id, bookedQuantity);
+//         alert("You may have been logged out. \nPlease try again");
+//         router.push('/');
+//       }
       
 
       
