@@ -1774,12 +1774,15 @@ export async function updateCourtRequestStatus(requestId: string) {
     );
 
     const currentTime = new Date().toISOString();
-    const startTime = new Date(response.start).toISOString();
+    // const startTime = new Date(response.start);
+    // const startTimeIST = new Date(startTime.getTime() - 5.5 * 60 * 60 * 1000);
 
-    // Prevent punch-in or punch-out before the slot starts
-    if (currentTime < startTime) {
-      throw new Error("Punch-in or punch-out is not allowed before the slot starts.");
-    }
+    // console.log("Current Time : ", currentTime, "\nStart Time : ", startTimeIST);
+
+    // // Prevent punch-in or punch-out before the slot starts
+    // if (currentTime < startTimeIST) {
+    //   throw new Error("Punch-in or punch-out is not allowed before the slot starts.");
+    // }
 
     const status =
       response.status === "reserved"

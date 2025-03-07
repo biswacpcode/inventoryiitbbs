@@ -20,7 +20,6 @@ export default function Component({ params }: { params: { id: string } }) {
   const [item, setItem] = useState<any>(null);
   const [zyada, setZyada] = useState(true);
   const [purpose, setPurpose] = useState("");
-  const [purLength, setPurLength] = useState(0); // To track start time // To track end time
   const [societyName, setSocietyName] = useState<string>("");
   const [societyEmail, setSocietyEmail] = useState<string>("");
     const [councilName, setCouncilName] = useState<string>("");
@@ -72,15 +71,19 @@ export default function Component({ params }: { params: { id: string } }) {
     e.preventDefault();
 
     // Validate form fields if necessary
-    if (zyada || purLength === 0) {
+
+    if (zyada) {
       return;
     }
+    
+    
 
     setIsLoading(true);
 
 
 
     try {
+      
       const bookedQuantity = parseInt(
         (e.currentTarget.elements.namedItem("bookedQuantity") as HTMLInputElement).value,
         10
@@ -161,8 +164,10 @@ export default function Component({ params }: { params: { id: string } }) {
       console.error("Error creating booking request:", error);
       // Handle error appropriately (e.g., show a notification)
     } finally {
+      
       setIsLoading(false);
     }
+
     router.push('/requests');
   };
 
