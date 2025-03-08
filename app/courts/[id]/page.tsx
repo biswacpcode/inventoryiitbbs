@@ -153,8 +153,6 @@ interface User {
       }
   
       fetchAvailableSlots();
-      if(user)
-        checkPermission(userId!, selectedDate);
 
     }, [selectedDate, court]);
     const debouncedUpdateEmail = useDebouncedCallback((index: number, value: string) => {
