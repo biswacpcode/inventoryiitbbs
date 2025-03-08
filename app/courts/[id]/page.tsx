@@ -163,6 +163,7 @@ interface User {
         signIn("google");
         return;
       }
+      checkPermission(userId!, selectedDate);
 
       if(user){
         if(permission)
