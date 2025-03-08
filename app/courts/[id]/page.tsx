@@ -163,6 +163,14 @@ interface User {
         signIn("google");
         return;
       }
+
+      if(user){
+        if(permission)
+            checkPermission(userId!, selectedDate);
+        else{
+            alert("You have one reservation already");
+            router.push('/inventory')}
+    }
   
       setIsSubmitting(true);
   
@@ -222,13 +230,7 @@ interface User {
           }
           console.log(permission)
      }
-    if(user){
-        if(permission)
-            checkPermission(userId!, selectedDate);
-        else{
-            alert("You have one reservation already");
-            router.push('/inventory')}
-    }
+    
   
     const checkReservations = async (userId: string, companionEmails: string[], date: string) => {
       // Check if user and companions have ongoing reservations
