@@ -1421,8 +1421,8 @@ export async function ReadCourtBookingsByCourtIdAndDate(
   date: string
 ): Promise<Models.Document[]> {
   try {
-    const startOfDay = new Date(`${date}T00:00:00`).toISOString();
-const endOfDay = new Date(`${date}T23:59:59`).toISOString();
+    const startOfDay = `${date}T00:00:00`
+const endOfDay = `${date}T23:59:59`
 
 const bookings = await database.listDocuments(
   process.env.DATABASE_ID!,
@@ -1430,7 +1430,7 @@ const bookings = await database.listDocuments(
   [
     Query.equal("courtId", [courtId]),
     Query.greaterThanEqual("start", startOfDay),
-    Query.lessThanEqual("start", endOfDay),
+    Query.lessThanEqual("end", endOfDay),
   ]
 );
 
@@ -1605,32 +1605,43 @@ export async function GenerateAvailableTimeSlots(
 
   // Count overlaps for each potential slot and filter out past slots
   const availableSlots: string[] = [];
+  console.log("Details Here: ", {
+    date,
+    courtId,
+    availableSlots,
+    potentialSlots,
+    existingBookings,
+    currentISTTime: currentISTTime.toISOString(),
+  });
 
   potentialSlots.forEach((potentialSlot) => {
     const [potentialStart, potentialEnd] = potentialSlot.split("-");
-    const potentialStartDate = new Date(`${date}T${potentialStart}:00+05:30`).getTime();
-    const potentialEndDate = new Date(`${date}T${potentialEnd}:00+05:30`).getTime();
+    const potentialStartDate = `${date}T${potentialStart.trim()}.000+00:00`;
+    console.log({potentialStartDate})
+    //const potentialEndDate = new Date(`${date}T${potentialEnd}:00:00.000+00:00`)
+
+    
 
     // Skip slots that are before the current IST time
-    if (potentialStartDate < currentISTTime.getTime()) {
-      return;
-    }
+    // if (potentialStartDate < currentISTTime) {
+    //   return;
+    // }
+
 
     let overlapCount = 0;
 
     existingBookings.forEach((booking) => {
-      const bookingStart = new Date(booking.start).getTime();
-      const bookingEnd = new Date(booking.end).getTime();
-
-      // Check if the potential slot overlaps with the existing booking
-      if (potentialStartDate < bookingEnd && potentialEndDate > bookingStart) {
-        overlapCount += 1;
-      }
+      // const bookingStart = new Date(booking.start).getTime();
+      // const bookingEnd = new Date(booking.end).getTime();
+      
+      if(booking.start === potentialStartDate)
+        overlapCount+=1;
     });
 
-    if (overlapCount < 1) {
+    if(overlapCount === 0)
       availableSlots.push(potentialSlot);
-    }
+
+    
   });
 
   console.log("Details Here: ", {
