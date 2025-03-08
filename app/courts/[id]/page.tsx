@@ -153,7 +153,7 @@ interface User {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
   
-      if (!selectedTimeSlot || companionEmails.length < (court?.minUsers || 0)) {
+      if (!selectedTimeSlot || companionEmails.length < (court?.minUsers - 1 || 0)) {
         alert("Please fill in all required fields.");
         return;
       }
@@ -441,6 +441,7 @@ interface User {
                 </small>
               </div>
 
+  
   
               {/* Submit Button */}
               {isSubmitting ? (
