@@ -102,9 +102,26 @@ interface User {
 
     }, [params.id, router]);
 
-    
+    const checkPermission = async (userId: string, date: string) => {
+      const existingBookings = await ReadCourtBookingsByCourtTypeAndDate(court!.type, date);
+      console.log(userId)
+      for (const booking of existingBookings) {
+          if (
+            booking.status === "reserved" ||
+            booking.status === "punched-in"
+          ) {
+            if (
+              userId ===(booking.requestedUser) ||
+              booking.companions.split(",").includes(userId)
+            ) {
+              setPermission(false);
+            }
+          }
+        }
+   }
     
 
+    
   
     useEffect(() => {
       async function fetchAvailableSlots() {
@@ -136,6 +153,8 @@ interface User {
       }
   
       fetchAvailableSlots();
+      if(user)
+        checkPermission(userId!, selectedDate);
 
     }, [selectedDate, court]);
     const debouncedUpdateEmail = useDebouncedCallback((index: number, value: string) => {
@@ -213,25 +232,9 @@ interface User {
         setIsSubmitting(false);
       }
     };
-     const checkPermission = async (userId: string, date: string) => {
-        const existingBookings = await ReadCourtBookingsByCourtTypeAndDate(court!.type, date);
-        console.log(userId)
-        for (const booking of existingBookings) {
-            if (
-              booking.status === "reserved" ||
-              booking.status === "punched-in"
-            ) {
-              if (
-                userId ===(booking.requestedUser) ||
-                booking.companions.split(",").includes(userId)
-              ) {
-                setPermission(false);
-              }
-            }
-          }
-          console.log(permission)
-     }
+     
     
+     
   
     const checkReservations = async (userId: string, companionEmails: string[], date: string) => {
       // Check if user and companions have ongoing reservations
