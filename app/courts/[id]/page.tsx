@@ -62,7 +62,7 @@ interface User {
           const fetchedCourt = await ServerReadCourtById(params.id);
           if (fetchedCourt) {
             setCourt(fetchedCourt);
-            const maxCom = fetchedCourt.minUsers;
+            const maxCom = fetchedCourt.minUsers - 1;
             setMaxComp(maxCom);
       
           } else {
