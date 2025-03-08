@@ -1430,7 +1430,6 @@ const bookings = await database.listDocuments(
   [
     Query.equal("courtId", [courtId]),
     Query.greaterThanEqual("start", startOfDay),
-    Query.lessThanEqual("end", endOfDay),
   ]
 );
 
