@@ -260,7 +260,7 @@ interface User {
       const allUserIds = [userId, ...companionUserIds];
   
       // Fetch existing bookings
-      const existingBookings = await ReadCourtBookingsByCourtIdAndDate(court!.$id, date);
+      const existingBookings = await ReadCourtBookingsByCourtTypeAndDate(court!.type, date);
   
       // Check if any booking overlaps
       for (const booking of existingBookings) {
