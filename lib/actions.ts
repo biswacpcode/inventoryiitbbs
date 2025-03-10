@@ -838,7 +838,7 @@ export async function ReadBookingItemsByRequestedBy() {
       if (
 
         currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
-        && !(booking.receivedAt)
+        && (booking.status ==="approved")
       ) {
         await database.deleteDocument(
           process.env.DATABASE_ID!,
