@@ -826,6 +826,7 @@ export async function ReadBookingItemsByRequestedBy() {
     const response = await database.listDocuments(
       process.env.DATABASE_ID!,
       process.env.BOOKINGS_COLLECTION_ID!,
+      [Query.equal("status", ["approved"])]
     );
     const currentISTTime = new Date();
     currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
@@ -838,7 +839,6 @@ export async function ReadBookingItemsByRequestedBy() {
       if (
 
         currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
-        && (booking.status ==="approved")
       ) {
         await database.deleteDocument(
           process.env.DATABASE_ID!,
