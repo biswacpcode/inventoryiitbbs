@@ -822,6 +822,49 @@ export async function ReadBookingItemsByRequestedBy() {
 
   const userId = await getUserId(user.email!);
 
+  try{
+    const response = await database.listDocuments(
+      process.env.DATABASE_ID!,
+      process.env.BOOKINGS_COLLECTION_ID!,
+    );
+    const currentISTTime = new Date();
+    currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
+    response.documents.forEach(async (booking) => {
+      const bookingStartDate = new Date(booking.start);
+      bookingStartDate.setMinutes(bookingStartDate.getMinutes());
+      //console.log({bookingStartDate, bookingDate, createdAt, condition:(currentISTTime.getTime() > createdAt.getTime() + 15 * 60 * 1000)});
+  
+    
+      if (
+        currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
+      ) {
+        await database.deleteDocument(
+          process.env.DATABASE_ID!,
+          process.env.BOOKINGS_COLLECTION_ID!,
+          booking.$id
+        );
+        const item = await ReadInventoryItemById(booking.itemId);
+        const newAvailableQuantity = item.availableQuantity + booking.bookedQuantity;
+    
+        // Update the item to reduce available quantity
+        await database.updateDocument(
+          process.env.DATABASE_ID!,
+          process.env.ITEMS_COLLECTION_ID!, // Ensure this is set to your items collection ID
+          booking.itemId, // Use itemId to identify the document
+          {
+            availableQuantity: newAvailableQuantity,
+          }
+        );
+      }
+    });
+
+
+
+  }catch(error){
+    console.error("Failed to delete relevent Bookings", error);
+    throw new Error ("Failed to delete relevent bookings");
+  }
+
   try {
     // Fetch booking items from Appwrite
     const response = await database.listDocuments(
@@ -829,6 +872,7 @@ export async function ReadBookingItemsByRequestedBy() {
       process.env.BOOKINGS_COLLECTION_ID!,
       [Query.equal("requestedUser", [userId])]
     );
+    console.log(userId);
 
     // Initialize an array to store the items with itemName
     const itemsWithNames = [];
@@ -856,6 +900,7 @@ export async function ReadBookingItemsByRequestedBy() {
       // Add the booking item to the array
       itemsWithNames.push(bookingItem);
     }
+    console.log(itemsWithNames)
 
     return itemsWithNames;
   } catch (error) {
@@ -1690,15 +1735,21 @@ try {
   currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
   
   const currentDateIST = currentISTTime.toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+  console.log({currentISTTime, currentDateIST});
   
   bookings.documents.forEach(async (booking) => {
     const bookingStartDate = new Date(booking.start);
-    bookingStartDate.setMinutes(bookingStartDate.getMinutes() + 330);
+    bookingStartDate.setMinutes(bookingStartDate.getMinutes());
     const bookingDate = bookingStartDate.toISOString().split("T")[0]; // Extract date in YYYY-MM-DD format
+    const createdAt = new Date(booking.$createdAt);
+    createdAt.setMinutes(createdAt.getMinutes() +330);
+    //console.log({bookingStartDate, bookingDate, createdAt, condition:(currentISTTime.getTime() > createdAt.getTime() + 15 * 60 * 1000)});
+
   
     if (
       bookingDate === currentDateIST && // Check if the booking is for today
       currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
+      &&currentISTTime.getTime() > createdAt.getTime() + 10 * 60 * 1000
     ) {
       await database.updateDocument(
         process.env.DATABASE_ID!,
@@ -1719,20 +1770,21 @@ try {
 
 
   try {
-    const bookings = await database.listDocuments(
+    const allBookings = await database.listDocuments(
       process.env.DATABASE_ID!,
       process.env.COURTBOOKINGS_COLLECTION_ID!,
       [
-        
-        Query.and([Query.equal("status", ["reserved", "punched-in", "late"]),
-        Query.equal("requestedUser", [userId])
-      ]
-        ),
+        Query.equal("status", ["reserved", "punched-in", "late"]),
       ]
     );
+    // Filter client-side
+    const bookings = allBookings.documents.filter(doc => 
+      doc.requestedUser === userId ||doc.companions.split(",").includes(userId)
+    );
+    
 
-    console.log(bookings.documents);
-    return bookings.documents;
+    console.log(bookings);
+    return bookings;
   } catch (error) {
     console.error("Failed to read court booking requests:", error);
     throw new Error("Failed to read court booking requests");

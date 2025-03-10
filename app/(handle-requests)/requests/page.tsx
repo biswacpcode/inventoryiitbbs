@@ -47,6 +47,19 @@ export default function Component() {
   const [loadingPage, setLoadingPage] = useState(false);
   const [deleting, setDeleting] = useState("");
   const [activeTab, setActiveTab] = useState<"items" | "courts">("items");
+  function formatDateTime(isoString: string): string {
+    const date = new Date(isoString);
+  
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+  
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  }
 
 
   // Fetch requests for items and courts based on the active tab
@@ -223,7 +236,7 @@ export default function Component() {
           const startTimeIST = new Date(startTime.getTime() - 5.5 * 60 * 60 * 1000);
           const endTime = new Date(courtRequest.end); // This is in UTC
           const endTimeIST = new Date(endTime.getTime() - 5.5 * 60 * 60 * 1000);
-          const isSlotActive = (startTimeIST <= currentTime) && (currentTime <= endTimeIST) ;          
+          const isSlotActive = (startTimeIST <= currentTime) && (currentTime <= endTimeIST) && (courtRequest.status !=="late");          
 
           return (
             <TableRow
@@ -243,8 +256,8 @@ export default function Component() {
                   </Link>
                 </div>
               </TableCell>
-              <TableCell>{courtRequest.start}</TableCell>
-              <TableCell>{courtRequest.end}</TableCell>
+              <TableCell>{formatDateTime(courtRequest.start)}</TableCell>
+              <TableCell>{formatDateTime(courtRequest.end)}</TableCell>
               <TableCell>
                 <Badge
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -270,6 +283,7 @@ export default function Component() {
                     onClick={() =>
                       handleCourtDelete(courtRequest.$id)
                     }
+                    disabled = {courtRequest.status!=="reserved"}
                   >
                     <TrashIcon className="h-4 w-4" />
                   </Button>
