@@ -1729,7 +1729,8 @@ try {
     process.env.DATABASE_ID!,
     process.env.COURTBOOKINGS_COLLECTION_ID!,
     [
-      Query.equal("status", ["reserved"])
+      Query.equal("status", ["reserved"]),
+      Query.limit(400)
     ]
   );
   
@@ -1777,9 +1778,13 @@ try {
       process.env.COURTBOOKINGS_COLLECTION_ID!,
       [
         Query.equal("status", ["reserved", "punched-in", "late"]),
+        Query.limit(400) // This should be inside the same array
       ]
     );
+    
     // Filter client-side
+
+    console.log({all: allBookings.documents});
     const bookings = allBookings.documents.filter(doc => 
       doc.requestedUser === userId ||doc.companions.split(",").includes(userId)
     );

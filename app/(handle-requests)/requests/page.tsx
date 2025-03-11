@@ -49,7 +49,8 @@ export default function Component() {
   const [activeTab, setActiveTab] = useState<"items" | "courts">("items");
   function formatDateTime(isoString: string): string {
     const date = new Date(isoString);
-  
+   
+    date.setMinutes(date.getMinutes() - 330);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
     const year = date.getFullYear();
