@@ -111,7 +111,7 @@ export default function ManagerItemDetailPage({
           duration: 3000,
         })
   
-        //router.push("/manager-portal")
+        router.push("/manager-portal")
       } catch (error) {
         console.error(`Error updating item status to ${newStatus}:`, error)
         toast({
