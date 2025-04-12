@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import  Input  from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { JSX, SVGProps, useState, useEffect, FormEvent } from "react";
 import { ReadInventoryItemById, CreateBookingRequest, ReadUserById, DeleteBookingRequest } from "@/lib/actions";
@@ -41,12 +40,6 @@ export default function Component({ params }: { params: { id: string } }) {
         setCouncilName(council.lastName);
 
     }
-    // const response = await fetch('/api/user-info',{
-    //   method:'POST'
-    // });
-    // const data = await response.json();
-    // const user = data.user;
-    // setUser(user);
   }
 
     fetchItem();
@@ -121,45 +114,8 @@ export default function Component({ params }: { params: { id: string } }) {
       formData.append("status", item.defaultStatus);
 
       // Call the CreateBookingRequest function
-      const requestId = await CreateBookingRequest(formData);
-//       if (user && item.defaultStatus==="pending"){
-//         const bookingDetails = {
-//           requesterName: `${user.given_name} ${user.family_name}`,
-//           itemName: item.itemName,
-//           bookedQuantity: bookedQuantity.toString(),
-//           purpose: purpose,
-//           approveLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?approveId=${requestId}`,
-//           rejectLink: `${process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_URL!}/items-requests?rejectId=${requestId}`
-//         };
-//  // Call the API route to send the email
-//         await fetch('/api/send-booking-email', {
-//           method: 'POST',
-//           headers: {
-//             'Content-Type': 'application/json',
-//           },
-//           body: JSON.stringify({
-//             recipientEmail: `${societyEmail}`,
-//             bookingDetails,
-//           }),
-//         });
-//       }else{
-//         await DeleteBookingRequest(requestId, item.$id, bookedQuantity);
-//         alert("You may have been logged out. \nPlease try again");
-//         router.push('/');
-//       }
-      
-
-      
-  
-     
-      
-    
+      const requestId = await CreateBookingRequest(formData);                 
     }
-  
-
-      // Optionally, you can navigate the user or show a success message here
-      // For example:
-      // router.push("/success");
      catch (error) {
       console.error("Error creating booking request:", error);
       // Handle error appropriately (e.g., show a notification)

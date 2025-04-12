@@ -607,6 +607,8 @@ export async function ReadBookedItembyId(requestId: string) {
       addedBy: inventoryItem.addedBy,
       bookedQuantity: bookedQuanitity,
       status: status,
+      requestedAt: doc.$createdAt,
+      requestedBy: doc.requestedUser
     };
   } catch (error) {
     console.error("Failed to read booking items:", error);
@@ -822,50 +824,7 @@ export async function ReadBookingItemsByRequestedBy() {
 
   const userId = await getUserId(user.email!);
 
-  try{
-    const response = await database.listDocuments(
-      process.env.DATABASE_ID!,
-      process.env.BOOKINGS_COLLECTION_ID!,
-      [Query.equal("status", ["approved"])]
-    );
-    const currentISTTime = new Date();
-    currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
-    response.documents.forEach(async (booking) => {
-      const bookingStartDate = new Date(booking.start);
-      bookingStartDate.setMinutes(bookingStartDate.getMinutes());
-      //console.log({bookingStartDate, bookingDate, createdAt, condition:(currentISTTime.getTime() > createdAt.getTime() + 15 * 60 * 1000)});
-  
-    
-      if (
-
-        currentISTTime.getTime() > bookingStartDate.getTime() + 15 * 60 * 1000 // Check if the current time is more than 15 minutes late
-      ) {
-        await database.deleteDocument(
-          process.env.DATABASE_ID!,
-          process.env.BOOKINGS_COLLECTION_ID!,
-          booking.$id
-        );
-        const item = await ReadInventoryItemById(booking.itemId);
-        const newAvailableQuantity = item.availableQuantity + booking.bookedQuantity;
-    
-        // Update the item to reduce available quantity
-        await database.updateDocument(
-          process.env.DATABASE_ID!,
-          process.env.ITEMS_COLLECTION_ID!, // Ensure this is set to your items collection ID
-          booking.itemId, // Use itemId to identify the document
-          {
-            availableQuantity: newAvailableQuantity,
-          }
-        );
-      }
-    });
-
-
-
-  }catch(error){
-    console.error("Failed to delete relevent Bookings", error);
-    throw new Error ("Failed to delete relevent bookings");
-  }
+ 
 
   try {
     // Fetch booking items from Appwrite
@@ -1117,13 +1076,18 @@ export async function DamagedQuantityUpdate(
   }
 
   try{
-    const damagedQuantity = bookedQuantity;
+    const response = await database.getDocument(
+      process.env.DATABASE_ID!,
+      process.env.ITEMS_COLLECTION_ID!, // Ensure this is set to your items collection ID
+      itemId
+    )
+    const damagedQuantity = response.damagedQuantity;
     await database.updateDocument(
       process.env.DATABASE_ID!,
       process.env.ITEMS_COLLECTION_ID!, // Ensure this is set to your items collection ID
       itemId, // Use itemId to identify the document
       {
-        damagedQuantity: damagedQuantity
+        damagedQuantity: damagedQuantity + bookedQuantity
       }
     );
   }
@@ -1736,8 +1700,8 @@ try {
   
   const currentISTTime = new Date();
   currentISTTime.setMinutes(currentISTTime.getMinutes() + 330); // Convert UTC to IST
-  
-  const currentDateIST = currentISTTime.toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+  99+9
+  const currentDateIST = currentISTTime.toISOString().split("T-0")[0]; // Get current date in YYYY-MM-DD format
   console.log({currentISTTime, currentDateIST});
   
   bookings.documents.forEach(async (booking) => {
@@ -1829,7 +1793,8 @@ export async function ReadCourtRequest(requestId: string){
     end: response.end,
     companions:response.companions,
     status: response.status,
-    requestedUser: response.requestedUser
+    requestedUser: response.requestedUser,
+    createdAt: response.$createdAt
   }
   return request;
 }

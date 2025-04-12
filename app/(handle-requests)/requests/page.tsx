@@ -15,6 +15,7 @@ import { ReadBookingItemsByRequestedBy, ReadCourtRequestsByRequestedBy, DeleteBo
 import Link from "next/link";
 import Loading from "@/components/shared/Loader";
 import { Models } from "node-appwrite";
+import { formatISTDateTime } from "@/lib/utils";
 
 // Define the Request types for items and courts
 interface Request {
@@ -161,7 +162,7 @@ export default function Component() {
                   className="border-b border-gray-200 hover:bg-muted"
                 >
                   <TableCell>
-                    <Link href={`/requests/${request.$id}`}>{request.itemName}</Link>
+                    <Link href={`/requests/item/${request.$id}`}>{request.itemName}</Link>
                   </TableCell>
                   <TableCell>{request.start}</TableCell>
                   <TableCell>{request.end}</TableCell>
@@ -230,13 +231,7 @@ export default function Component() {
       </TableHeader>
       <TableBody>
         {[...courtRequests].reverse().map((courtRequest) => {
-          const currentTime = new Date();
-          const startTime = new Date(courtRequest.start); // This is in UTC
-          const startTimeIST = new Date(startTime.getTime() - 5.5 * 60 * 60 * 1000);
-          const endTime = new Date(courtRequest.end); // This is in UTC
-          const endTimeIST = new Date(endTime.getTime() - 5.5 * 60 * 60 * 1000);
-          const isSlotActive = (startTimeIST <= currentTime) && (currentTime <= endTimeIST) && (courtRequest.status !=="late");          
-
+          
           return (
             <TableRow
               key={courtRequest.$id}
@@ -245,18 +240,14 @@ export default function Component() {
               <TableCell>
                 <div className="relative">
                   <Link
-                    href={isSlotActive ? `/court-requests/${courtRequest.$id}` : "#"}
-                    
-                    className={`${
-                      isSlotActive ? "text-blue-600 hover:underline" : "text-gray-500"
-                    }`}
+                    href={`/requests/court/${courtRequest.$id}`}
                   >
                     {courtRequest.courtName}
                   </Link>
                 </div>
               </TableCell>
-              <TableCell>{formatDateTime(courtRequest.start)}</TableCell>
-              <TableCell>{formatDateTime(courtRequest.end)}</TableCell>
+              <TableCell>{formatISTDateTime(courtRequest.start)}</TableCell>
+              <TableCell>{formatISTDateTime(courtRequest.end)}</TableCell>
               <TableCell>
                 <Badge
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
